@@ -9,21 +9,22 @@ import {
   Animated,
 } from "react-native";
 
-import AnimeCard from "@/components/AnimeCard";
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
-import { supabase } from "@/lib/supabase";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
+import AnimeCard from "@/components/AnimeCard";
+
+import { supabase } from "@/lib/supabase";
+import { AlertDialog } from "@/components/Alert";
+import { useAlertDialog } from "@/hooks/useAlert";
 import {
   getBookmarks,
   removeBookmark,
   clearBookmarks,
   Bookmark,
 } from "@/services/bookmark";
-import { useAlertDialog } from "@/hooks/useAlert";
-import { AlertDialog } from "@/components/Alert";
 
 const { width: SCREEN_WIDTH, height } = Dimensions.get("window");
 const PADDING = 16;

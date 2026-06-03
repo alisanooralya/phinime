@@ -4,15 +4,14 @@ import { View, StyleSheet, FlatList, Dimensions } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import colors from "@/constants/colors";
+import Loader from "@/components/Loader";
 import AnimeCard from "@/components/AnimeCard";
 import BackButton from "@/components/BackButton";
-
 import {
-  getAnimeByGenre,
+  getByGenre,
   getGenres,
-  type CompletedAnime,
-} from "@/services/otakudesu";
-import Loader from "@/components/Loader";
+  type AnimeListItem,
+} from "@/services/samehadaku";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const COLUMN_COUNT = 3;
@@ -24,7 +23,7 @@ export default function GenreDetailScreen() {
   const router = useRouter();
   const { genreId } = useLocalSearchParams<{ genreId: string }>();
 
-  const [animeList, setAnimeList] = useState<CompletedAnime[]>([]);
+  const [animeList, setAnimeList] = useState<AnimeListItem[]>([]);
   const [genreTitle, setGenreTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -49,12 +48,12 @@ export default function GenreDetailScreen() {
         setGenreTitle(currentGenre.title);
       }
 
-      const animeResponse = await getAnimeByGenre(genreId, 1);
+      const animeResponse = await getByGenre(genreId, 1);
       setAnimeList(animeResponse.animeList);
       setPage(1);
       setHasMore(
         animeResponse.animeList.length > 0 &&
-          animeResponse.pagination?.hasNextPage !== false,
+          (animeResponse as any).pagination?.hasNextPage !== false,
       );
     } catch (error) {
       console.error("[GenreDetailScreen] Gagal fetch:", error);
@@ -69,12 +68,12 @@ export default function GenreDetailScreen() {
     try {
       setIsLoadingMore(true);
       const nextPage = page + 1;
-      const animeResponse = await getAnimeByGenre(genreId, nextPage);
+      const animeResponse = await getByGenre(genreId, nextPage);
 
       if (animeResponse.animeList.length > 0) {
         setAnimeList((prev) => [...prev, ...animeResponse.animeList]);
         setPage(nextPage);
-        setHasMore(animeResponse.pagination?.hasNextPage !== false);
+        setHasMore((animeResponse as any).pagination?.hasNextPage !== false);
       } else {
         setHasMore(false);
       }
@@ -86,20 +85,20 @@ export default function GenreDetailScreen() {
   };
 
   const renderAnimeCard = useCallback(
-    ({ item }: { item: CompletedAnime }) => (
+    ({ item }: { item: AnimeListItem }) => (
       <AnimeCard
         title={item.title}
         poster={item.poster}
-        eps={item.episodes ? `${item.episodes} Eps` : undefined}
-        score={item.score ? `⭐ ${item.score}` : undefined}
-        subTitle={item.season}
+        eps={item.type}
+        score={item.score}
+        subTitle={item.status}
         onPress={() => router.push(`/detail/${item.animeId}` as any)}
       />
     ),
     [router],
   );
 
-  const keyExtractor = useCallback((item: CompletedAnime) => item.animeId, []);
+  const keyExtractor = useCallback((item: AnimeListItem) => item.animeId, []);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;

@@ -2,8 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 GoogleSignin.configure({
-  webClientId:
-    "460160956613-v4pkpf70ulsipri4ntjqpl1ad7homcat.apps.googleusercontent.com",
+  webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
   scopes: ["profile", "email"],
 });
 
@@ -26,19 +25,14 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     const userInfo = await GoogleSignin.signIn();
     const { idToken } = await GoogleSignin.getTokens();
 
-    if (!idToken) {
+    if (!idToken)
       return { success: false, error: "Gagal mendapatkan token Google" };
-    }
-
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "google",
       token: idToken,
     });
 
-    if (error) {
-      return { success: false, error: error.message };
-    }
-
+    if (error) return { success: false, error: error.message };
     const user = data.user;
 
     return {

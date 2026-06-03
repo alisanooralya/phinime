@@ -7,16 +7,17 @@ import Icon from "@/components/Icon";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
-import { getCurrentUser } from "@/services/auth";
 import AnimeCard from "@/components/AnimeCard";
 import BackButton from "@/components/BackButton";
-import { searchAnime, SearchAnime } from "@/services/otakudesu";
+
+import { getCurrentUser } from "@/services/auth";
+import { searchAnime, type AnimeListItem } from "@/services/samehadaku";
 
 export default function SearchScreen() {
   const router = useRouter();
   const { query } = useLocalSearchParams<{ query: string }>();
   const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<SearchAnime[]>([]);
+  const [results, setResults] = useState<AnimeListItem[]>([]);
 
   const fetchResults = useCallback(async () => {
     if (!query) return;
@@ -25,7 +26,7 @@ export default function SearchScreen() {
       setLoading(true);
 
       const user = await getCurrentUser();
-      const response = await searchAnime(query, user?.id);
+      const response = await searchAnime(query, 1, user?.id);
 
       setResults(response.animeList);
     } catch (err: any) {
@@ -39,12 +40,13 @@ export default function SearchScreen() {
     fetchResults();
   }, [fetchResults]);
 
-  const renderItem = ({ item }: { item: SearchAnime }) => (
+  const renderItem = ({ item }: { item: AnimeListItem }) => (
     <AnimeCard
       title={item.title}
       poster={item.poster}
+      eps={item.type}
       score={item.score}
-      eps={item.status}
+      subTitle={item.status}
       onPress={() => {
         router.push(`/detail/${item.animeId}` as any);
       }}

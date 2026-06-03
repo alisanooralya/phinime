@@ -13,16 +13,17 @@ import {
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
-import { supabase } from "@/lib/supabase";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
 import ExpCard from "@/components/ExpCard";
+import RankAvatarBorder from "@/components/RankAvatarBorder";
+
+import { supabase } from "@/lib/supabase";
 import { getBookmarks } from "@/services/bookmark";
 import { getWatchHistory } from "@/services/history";
 import { getUserExp, UserExp } from "@/services/exp";
 import { AlertDialog, Toast } from "@/components/Alert";
 import { useAlertDialog, useToast } from "@/hooks/useAlert";
-import RankAvatarBorder from "@/components/RankAvatarBorder";
 
 interface ProfileData {
   name: string;
@@ -236,35 +237,8 @@ export default function ProfileScreen() {
   }, [router, confirm]);
 
   const handleSettings = useCallback(() => {
-    router.push("/search/");
+    router.push("/");
   }, [router]);
-
-  const handleEasterEgg = useCallback(() => {
-    const count = easterEggCount + 1;
-    setEasterEggCount(count);
-
-    const messages = [
-      { title: "⚠️ Jangan diklik!", message: "Katanya jangan diklik..." },
-      { title: "😠 Serius nih!", message: "Udah dibilang jangan diklik." },
-      { title: "🤨 Kamu sengaja.", message: "Ini sudah yang ke-3 kalinya." },
-      {
-        title: "😤 Oke fine.",
-        message: "Kamu menang. Tidak ada apa-apa di sini.",
-      },
-      {
-        title: "🎉 Selamat!",
-        message: "Kamu menemukan... tombol ini lagi. Hebat sekali.",
-      },
-      { title: "💀", message: "..." },
-    ];
-
-    const msg = messages[Math.min(count - 1, messages.length - 1)];
-    showDialog({
-      title: msg.title,
-      message: msg.message,
-      onConfirm: hideAlert,
-    });
-  }, [easterEggCount, showDialog, hideAlert]);
 
   if (loading) {
     return (
@@ -338,18 +312,6 @@ export default function ProfileScreen() {
               label="Sign Out"
               onPress={handleSignOut}
               danger
-            />
-          </View>
-        </View>
-
-        <View style={styles.menuSection}>
-          <Text style={styles.menuSectionTitle}>???</Text>
-          <View style={styles.menuCard}>
-            <MenuItem
-              icon="TriangleAlert"
-              label="Don't click this"
-              onPress={handleEasterEgg}
-              secret
             />
           </View>
         </View>

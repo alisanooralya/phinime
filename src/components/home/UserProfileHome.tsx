@@ -3,10 +3,11 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 
-import Text from "./Text";
-import Button from "./Button";
-import ExpCard from "./ExpCard";
-import { AlertDialog } from "./Alert";
+import Text from "../Text";
+import Button from "../Button";
+import ExpCard from "../ExpCard";
+import { AlertDialog } from "../Alert";
+
 import colors from "@/constants/colors";
 import { signOut } from "@/services/auth";
 import { supabase } from "@/lib/supabase";

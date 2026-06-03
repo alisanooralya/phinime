@@ -23,7 +23,13 @@
       "expo-router",
       "expo-font",
       "@react-native-google-signin/google-signin",
-      "expo-video",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ],
       "expo-image"
     ],
     "ios": {

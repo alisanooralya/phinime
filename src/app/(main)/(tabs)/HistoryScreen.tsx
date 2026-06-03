@@ -11,10 +11,11 @@ import {
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
-import { supabase } from "@/lib/supabase";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
 import AnimeCard from "@/components/AnimeCard";
+
+import { supabase } from "@/lib/supabase";
 import {
   getWatchHistory,
   getProgressPercent,
@@ -175,7 +176,7 @@ export default function HistoryScreen() {
 
   const handlePress = useCallback(
     (item: WatchHistory) => {
-      router.push(`/watch/${item.anime_id}` as any);
+      router.push(`/watch/${item.episode_id}` as any);
     },
     [router],
   );

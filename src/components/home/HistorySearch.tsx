@@ -2,15 +2,15 @@ import { useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 
-import Icon from "./Icon";
-import Text from "./Text";
+import Icon from "../Icon";
+import Text from "../Text";
 import colors from "@/constants/colors";
 
 import {
   getSearchHistory,
   clearSearchHistory,
   deleteSearchHistoryItem,
-} from "@/services/cache";
+} from "@/services/search";
 import { getCurrentUser } from "@/services/auth";
 
 export default function SearchIndex() {

@@ -8,7 +8,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
 import { supabase } from "@/lib/supabase";
-import { cleanExpiredCache } from "@/services/cache";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -40,8 +39,6 @@ export default function WelcomeScreen() {
         } else {
           router.replace("/(main)/(tabs)");
         }
-
-        cleanExpiredCache();
       } catch (error) {
         console.error("[WelcomeScreen] Initialization error:", error);
       } finally {

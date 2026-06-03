@@ -100,27 +100,23 @@ export default function Navbar({
           />
         )}
 
-        {ITEMS.map((item, index) => {
-          const active = selectedIndex === index;
-
-          return (
-            <TouchableOpacity
-              key={index}
-              style={styles.item}
-              onPress={() => onSelect(index)}
-              activeOpacity={0.8}
+        {ITEMS.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.item}
+            onPress={() => onSelect(index)}
+            activeOpacity={0.8}
+          >
+            <Animated.View
+              style={[
+                styles.iconWrapper,
+                { transform: [{ scale: scales[index] }] },
+              ]}
             >
-              <Animated.View
-                style={[
-                  styles.iconWrapper,
-                  { transform: [{ scale: scales[index] }] },
-                ]}
-              >
-                {renderIcon(item, index)}
-              </Animated.View>
-            </TouchableOpacity>
-          );
-        })}
+              {renderIcon(item, index)}
+            </Animated.View>
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   );

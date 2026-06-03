@@ -2,9 +2,10 @@ import { useRouter } from "expo-router";
 import { useEffect, useState, memo, useCallback } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 
-import Text from "./Text";
+import Text from "../Text";
+
 import colors from "@/constants/colors";
-import { getGenres, Genre } from "@/services/otakudesu";
+import { getGenres, type Genre } from "@/services/api";
 
 interface GenreChipProps {
   item: Genre;
@@ -17,7 +18,7 @@ function SkeletonChip() {
 
 const GenreChip = memo(({ item, onPress }: GenreChipProps) => (
   <TouchableOpacity style={styles.chip} activeOpacity={0.8} onPress={onPress}>
-    <Text style={styles.chipText}>{item.title}</Text>
+    <Text style={styles.chipText}>{item.name}</Text>
   </TouchableOpacity>
 ));
 
@@ -32,8 +33,10 @@ export default function GenreList() {
 
   async function fetchData() {
     try {
-      const { genreList } = await getGenres();
-      setGenres(genreList);
+      const response = await getGenres();
+      if (response.ok) {
+        setGenres(response.data.genres);
+      }
     } catch (err) {
       console.error("[GenreList] Gagal fetch:", err);
     } finally {
@@ -42,18 +45,18 @@ export default function GenreList() {
   }
 
   const handlePress = useCallback(
-    (genreId: string) => () => router.push(`/genre/${genreId}`),
+    (slug: string) => () => router.push(`/genre/${slug}`),
     [router],
   );
 
   const renderItem = useCallback(
     ({ item }: { item: Genre }) => (
-      <GenreChip item={item} onPress={handlePress(item.genreId)} />
+      <GenreChip item={item} onPress={handlePress(item.slug)} />
     ),
     [handlePress],
   );
 
-  const keyExtractor = useCallback((item: Genre) => item.genreId, []);
+  const keyExtractor = useCallback((item: Genre) => item.slug, []);
 
   return (
     <View style={styles.wrapper}>

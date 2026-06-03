@@ -13,11 +13,12 @@ import {
   Animated,
 } from "react-native";
 
-import Icon from "./Icon";
-import Text from "./Text";
-import Button from "./Button";
+import Icon from "../Icon";
+import Text from "../Text";
+import Button from "../Button";
+
 import colors from "@/constants/colors";
-import { getHome, Top10Item } from "@/services/samehadaku";
+import { type PopularAnimeItem } from "@/services/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH - 32;
@@ -25,9 +26,13 @@ const CARD_HEIGHT = 180;
 const CARD_GAP = 10;
 
 interface AnimeCardProps {
-  item: Top10Item;
+  item: PopularAnimeItem;
   index: number;
   onPress: () => void;
+}
+
+interface AnimeTopProps {
+  animeList: PopularAnimeItem[];
 }
 
 const Dot = memo(({ active }: { active: boolean }) => {
@@ -66,7 +71,7 @@ const Dot = memo(({ active }: { active: boolean }) => {
 const AnimeCard = memo(({ item, index, onPress }: AnimeCardProps) => (
   <View style={styles.card}>
     <Image
-      source={{ uri: item.poster }}
+      source={{ uri: item.thumbnail }}
       style={styles.poster}
       contentFit="cover"
     />
@@ -98,7 +103,12 @@ const AnimeCard = memo(({ item, index, onPress }: AnimeCardProps) => (
       <View style={styles.bottomRow}>
         <Button button={styles.watchButton} onPress={onPress}>
           <View style={styles.playIconWrapper}>
-            <Icon name="Play" size={12} color={colors.secondary} fill={colors.secondary} />
+            <Icon
+              name="Play"
+              size={12}
+              color={colors.secondary}
+              fill={colors.secondary}
+            />
           </View>
           <Text style={styles.watchText}>Tonton</Text>
         </Button>
@@ -133,26 +143,12 @@ function SkeletonCard() {
   );
 }
 
-export default function AnimeTop() {
+export default function AnimeTop({ animeList }: AnimeTopProps) {
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
-  const [animeList, setAnimeList] = useState<Top10Item[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function fetchData() {
-    try {
-      const { top10 } = await getHome();
-      setAnimeList(top10.animeList);
-    } catch (err) {
-      console.error("[AnimeTop] Gagal fetch:", err);
-    }
-  }
 
   useEffect(() => {
     if (!isAutoPlay || animeList.length === 0) return;
@@ -171,7 +167,7 @@ export default function AnimeTop() {
   }, [isAutoPlay, animeList]);
 
   const handlePress = useCallback(
-    (animeId: string) => () => router.push(`/detail/${animeId}` as any),
+    (slug: string) => () => router.push(`/detail/${slug}` as any),
     [router],
   );
 
@@ -189,17 +185,16 @@ export default function AnimeTop() {
   const onScrollEndDrag = useCallback(() => setIsAutoPlay(true), []);
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Top10Item; index: number }) => (
-      <AnimeCard
-        item={item}
-        index={index}
-        onPress={handlePress(item.animeId)}
-      />
+    ({ item, index }: { item: PopularAnimeItem; index: number }) => (
+      <AnimeCard item={item} index={index} onPress={handlePress(item.slug)} />
     ),
     [handlePress],
   );
 
-  const keyExtractor = useCallback((item: Top10Item) => String(item.rank), []);
+  const keyExtractor = useCallback(
+    (item: PopularAnimeItem) => String(item.slug),
+    [],
+  );
 
   const getItemLayout = useCallback(
     (_: any, index: number) => ({

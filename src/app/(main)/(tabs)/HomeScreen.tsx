@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -8,27 +8,67 @@ import {
 } from "react-native";
 
 import colors from "@/constants/colors";
-import GenreList from "@/components/GenreList";
-import AnimeTop from "@/components/AnimeTop";
-import HomeHeader from "@/components/HomeHeader";
-import AnimeRecent from "@/components/AnimeRecent";
-import HistorySearch from "@/components/HistorySearch";
-import AnimeCompleted from "@/components/AnimeCompleted";
-import UserProfileHome from "@/components/UserProfileHome";
+import HomeHeader from "@/components/home/HomeHeader";
+import HistorySearch from "@/components/home/HistorySearch";
+import UserProfileHome from "@/components/home/UserProfileHome";
+
+import GenreList from "@/components/home/GenreList";
+import AnimeTop from "@/components/home/AnimeTop";
+import AnimeRecent from "@/components/home/AnimeRecent";
+import AnimeOngoing from "@/components/home/AnimeOngoing";
+import AnimeCompleted from "@/components/home/AnimeCompleted";
+
+import {
+  getPopularAnime,
+  getOngoingAnime,
+  getAnimeList,
+  type PopularAnimeItem,
+  type AnimeCard,
+} from "@/services/api";
+
+interface HomeState {
+  top: PopularAnimeItem[];
+  recent: AnimeCard[];
+  ongoing: AnimeCard[];
+  completed: AnimeCard[];
+}
 
 export default function Home() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [data, setData] = useState<HomeState | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [po, re, on, co] = await Promise.all([
+        getPopularAnime(),
+        getOngoingAnime(),
+        getAnimeList({ status: "ongoing" }),
+        getAnimeList({ status: "completed" }),
+      ]);
+
+      setData({
+        top: po.ok ? po.data.mingguan : [],
+        recent: re.ok ? re.data.anime : [],
+        ongoing: on.ok ? on.data.anime : [],
+        completed: co.ok ? co.data.anime : [],
+      });
+    } catch (err) {
+      console.error("[HomeScreen] Gagal fetch data:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
-    setRefreshKey((prev) => prev + 1);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await fetchData();
     setRefreshing(false);
-  }, []);
+  }, [fetchData]);
 
   return (
     <View style={styles.container}>
@@ -52,21 +92,24 @@ export default function Home() {
           />
         }
       >
-        <AnimeTop key={`top-${refreshKey}`} />
+        <AnimeTop animeList={data?.top || []} />
         <View style={styles.barrier} />
 
         <UserProfileHome />
         <View style={styles.barrier} />
 
-        <HistorySearch key={`history-${refreshKey}`} />
+        <HistorySearch />
 
-        <GenreList key={`genre-${refreshKey}`} />
+        <GenreList />
         <View style={styles.barrier} />
 
-        <AnimeRecent key={`recent-${refreshKey}`} />
-        <View style={{ marginBottom: 6 }} />
+        <AnimeRecent animeList={data?.recent || []} loading={!data} />
+        <View style={styles.barrier} />
 
-        <AnimeCompleted key={`completed-${refreshKey}`} />
+        <AnimeOngoing animeList={data?.ongoing || []} loading={!data} />
+        <View style={styles.barrier} />
+
+        <AnimeCompleted animeList={data?.completed || []} loading={!data} />
         <View style={styles.barrier} />
 
         <View style={styles.padding} />

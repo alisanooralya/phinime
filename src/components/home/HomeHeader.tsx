@@ -8,12 +8,15 @@ import {
   Keyboard,
 } from "react-native";
 
-import Icon from "./Icon";
-import Text from "./Text";
-import { Toast } from "./Alert";
-import TextInput from "./TextInput";
+import Icon from "../Icon";
+import Text from "../Text";
+import { Toast } from "../Alert";
+import TextInput from "../TextInput";
+
 import colors from "@/constants/colors";
 import { useToast } from "@/hooks/useAlert";
+import { saveSearchHistory } from "@/services/cache";
+import { getCurrentUser } from "@/services/auth";
 
 type Props = {
   scrollY: Animated.Value;
@@ -84,13 +87,17 @@ export default function HomeHeader({ scrollY }: Props) {
     ]).start(() => setSearchOpen(false));
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) {
       showToast("Pencarian Kosong", {
         message: "Anime apa yang ingin kamu cari?...",
         variant: "warning",
       });
     } else {
+      const user = await getCurrentUser();
+      if (user) {
+        await saveSearchHistory(user.id, query.trim());
+      }
       router.push(`/search/${query.trim()}`);
     }
   };

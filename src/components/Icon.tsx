@@ -7,7 +7,12 @@ interface IconProps {
   fill?: string;
 }
 
-export default function Icon({ name, color, size, fill="rgba(0,0,0,0)" }: IconProps) {
+export default function Icon({
+  name,
+  color,
+  size,
+  fill = "rgba(0,0,0,0)",
+}: IconProps) {
   const LucideIcon = icons[name];
 
   return <LucideIcon color={color} size={size} fill={fill} />;
