@@ -1,22 +1,28 @@
 import { supabase } from "@/lib/supabase";
 
-export async function saveSearchHistory(userId: string, query: string): Promise<void> {
+export async function saveSearchHistory(
+  userId: string,
+  query: string,
+): Promise<void> {
   const trimmedQuery = query.trim();
-    if (!trimmedQuery) return null;
+  if (!trimmedQuery) return;
 
-    const { data } = await supabase
-      .from("search_history")
-      .upsert(
-        { user_id: userId, query: trimmedQuery },
-        { onConflict: "user_id,query", ignoreDuplicates: false }
-      )
-      .select()
-      .single();
+  const { data } = await supabase
+    .from("search_history")
+    .upsert(
+      { user_id: userId, query: trimmedQuery },
+      { onConflict: "user_id,query", ignoreDuplicates: false },
+    )
+    .select()
+    .single();
 
-    return data;
+  return data;
 }
 
-export async function getSearchHistory(userId: string, limit = 10): Promise<string[]> {
+export async function getSearchHistory(
+  userId: string,
+  limit = 10,
+): Promise<string[]> {
   const { data, error } = await supabase
     .from("search_history")
     .select("query")
@@ -32,7 +38,10 @@ export async function clearSearchHistory(userId: string): Promise<void> {
   await supabase.from("search_history").delete().eq("user_id", userId);
 }
 
-export async function deleteSearchHistoryItem(userId: string, query: string): Promise<void> {
+export async function deleteSearchHistoryItem(
+  userId: string,
+  query: string,
+): Promise<void> {
   await supabase
     .from("search_history")
     .delete()

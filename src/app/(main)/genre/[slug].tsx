@@ -5,25 +5,17 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
-import AnimeCard from "@/components/AnimeCard";
+import AnimeCardComponent from "@/components/AnimeCard";
 import BackButton from "@/components/BackButton";
-import {
-  getByGenre,
-  getGenres,
-  type AnimeListItem,
-} from "@/services/samehadaku";
+import { getGenreDetail, getGenres, type AnimeCard } from "@/services/api";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const COLUMN_COUNT = 3;
-const GAP = 8;
-const CARD_WIDTH =
-  (SCREEN_WIDTH - (32 + (COLUMN_COUNT - 1) * GAP)) / COLUMN_COUNT;
 
 export default function GenreDetailScreen() {
   const router = useRouter();
-  const { genreId } = useLocalSearchParams<{ genreId: string }>();
+  const { slug } = useLocalSearchParams<{ slug: string }>();
 
-  const [animeList, setAnimeList] = useState<AnimeListItem[]>([]);
+  const [animeList, setAnimeList] = useState<AnimeCard[]>([]);
   const [genreTitle, setGenreTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -32,28 +24,28 @@ export default function GenreDetailScreen() {
 
   useEffect(() => {
     fetchInitialData();
-  }, [genreId]);
+  }, [slug]);
 
   const fetchInitialData = async () => {
-    if (!genreId) return;
+    if (!slug) return;
 
     try {
       setLoading(true);
 
       const genresResponse = await getGenres();
-      const currentGenre = genresResponse.genreList.find(
-        (g) => g.genreId === genreId,
+      const currentGenre = genresResponse.data.genres.find(
+        (g) => g.slug === slug,
       );
       if (currentGenre) {
-        setGenreTitle(currentGenre.title);
+        setGenreTitle(currentGenre.name);
       }
 
-      const animeResponse = await getByGenre(genreId, 1);
-      setAnimeList(animeResponse.animeList);
+      const animeResponse = await getGenreDetail(slug, 1);
+      setAnimeList(animeResponse.data.anime);
       setPage(1);
       setHasMore(
-        animeResponse.animeList.length > 0 &&
-          (animeResponse as any).pagination?.hasNextPage !== false,
+        animeResponse.data.anime.length > 0 &&
+          animeResponse.data?.lastPage !== 0,
       );
     } catch (error) {
       console.error("[GenreDetailScreen] Gagal fetch:", error);
@@ -63,17 +55,17 @@ export default function GenreDetailScreen() {
   };
 
   const fetchMoreData = async () => {
-    if (isLoadingMore || !hasMore || !genreId) return;
+    if (isLoadingMore || !hasMore || !slug) return;
 
     try {
       setIsLoadingMore(true);
       const nextPage = page + 1;
-      const animeResponse = await getByGenre(genreId, nextPage);
+      const animeResponse = await getGenreDetail(slug, nextPage);
 
-      if (animeResponse.animeList.length > 0) {
-        setAnimeList((prev) => [...prev, ...animeResponse.animeList]);
+      if (animeResponse.data.anime.length > 0) {
+        setAnimeList((prev) => [...prev, ...animeResponse.data.anime]);
         setPage(nextPage);
-        setHasMore((animeResponse as any).pagination?.hasNextPage !== false);
+        setHasMore(animeResponse.data?.lastPage !== 0);
       } else {
         setHasMore(false);
       }
@@ -85,20 +77,20 @@ export default function GenreDetailScreen() {
   };
 
   const renderAnimeCard = useCallback(
-    ({ item }: { item: AnimeListItem }) => (
-      <AnimeCard
+    ({ item }: { item: AnimeCard }) => (
+      <AnimeCardComponent
         title={item.title}
         poster={item.poster}
         eps={item.type}
-        score={item.score}
-        subTitle={item.status}
-        onPress={() => router.push(`/detail/${item.animeId}` as any)}
+        score={`item.score`}
+        subTitle={`item.status`}
+        onPress={() => router.push(`/detail/${item.slug}` as any)}
       />
     ),
     [router],
   );
 
-  const keyExtractor = useCallback((item: AnimeListItem) => item.animeId, []);
+  const keyExtractor = useCallback((item: AnimeCard) => item.slug, []);
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;

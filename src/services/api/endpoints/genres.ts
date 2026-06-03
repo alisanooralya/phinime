@@ -1,9 +1,5 @@
-import { apiFetch } from "../utils/fetcher.ts";
-import type {
-  ApiResponse,
-  GenresData,
-  GenreDetailData,
-} from "../types";
+import { apiFetch } from "../utils/fetcher";
+import type { ApiResponse, GenresData, GenreDetailData } from "../types";
 
 /**
  * GET /api/genres

@@ -1,4 +1,4 @@
-import { apiFetch } from "../utils/fetcher.ts";
+import { apiFetch } from "../utils/fetcher";
 import type {
   ApiResponse,
   AnimeListData,

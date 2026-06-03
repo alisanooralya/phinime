@@ -17,21 +17,24 @@ interface AnimeCompletedProps {
 
 interface RenderItemProps {
   item: AnimeCard;
-  onPress?: () => void;
+  onPress: () => void;
 }
 
 const renderItem = ({ item, onPress }: RenderItemProps) => (
-    <AnimeCardComponent
-      title={item.title}
-      poster={item.poster}
-      eps={item.type || undefined}
-      score={item.score || undefined}
-      subTitle={item.year?.toString()}
-      onPress={onPress}
-    />
+  <AnimeCardComponent
+    title={item.title}
+    poster={item.poster}
+    eps={item.type || undefined}
+    score={item.score?.toString() || undefined}
+    subTitle={item.year?.toString() || undefined}
+    onPress={onPress}
+  />
 );
 
-export default function AnimeCompleted({ animeList, loading }: AnimeCompletedProps) {
+export default function AnimeCompleted({
+  animeList,
+  loading,
+}: AnimeCompletedProps) {
   const router = useRouter();
 
   const keyExtractor = useCallback((item: animeList) => item.slug, []);
