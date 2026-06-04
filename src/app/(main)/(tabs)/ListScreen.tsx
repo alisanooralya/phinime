@@ -1,6 +1,5 @@
-import { useRouter } from "expo-router";
 import { View, StyleSheet } from "react-native";
-import { useRef, useState, useEffect, memo } from "react";
+import { useState, useEffect, memo } from "react";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -38,16 +37,33 @@ export default function ListScreen({ initialParams }: { initialParams?: any }) {
   const renderContent = () => {
     return (
       <View style={{ flex: 1 }}>
-        <View style={[styles.contentArea, activeType !== "ongoing" && styles.hidden]}>
+        <View
+          style={[
+            styles.contentArea,
+            activeType !== "ongoing" && styles.hidden,
+          ]}
+        >
           <PreservedOngoing />
         </View>
-        <View style={[styles.contentArea, activeType !== "completed" && styles.hidden]}>
+        <View
+          style={[
+            styles.contentArea,
+            activeType !== "completed" && styles.hidden,
+          ]}
+        >
           <PreservedCompleted />
         </View>
-        <View style={[styles.contentArea, activeType !== "movie" && styles.hidden]}>
+        <View
+          style={[styles.contentArea, activeType !== "movie" && styles.hidden]}
+        >
           <PreservedMovie />
         </View>
-        <View style={[styles.contentArea, activeType !== "schedule" && styles.hidden]}>
+        <View
+          style={[
+            styles.contentArea,
+            activeType !== "schedule" && styles.hidden,
+          ]}
+        >
           <PreservedSchedule isEmbedded />
         </View>
       </View>
@@ -57,23 +73,36 @@ export default function ListScreen({ initialParams }: { initialParams?: any }) {
   return (
     <View style={styles.container}>
       <Header title="list anime" />
-      
+
       <View style={styles.categoryWrapper}>
         <View style={styles.gridContainer}>
           {LIST_ITEMS.map((item) => (
-            <Button 
+            <Button
               key={item.type}
-              button={[styles.categoryCard, activeType === item.type && styles.activeCard]}
+              button={[
+                styles.categoryCard,
+                activeType === item.type && styles.activeCard,
+              ]}
               onPress={() => setActiveType(item.type)}
             >
-              <View style={[styles.iconBox, activeType === item.type && styles.activeIconBox]}>
-                <Icon 
-                  name={item.icon as any} 
-                  size={20} 
-                  color={activeType === item.type ? "#fff" : colors.accent} 
+              <View
+                style={[
+                  styles.iconBox,
+                  activeType === item.type && styles.activeIconBox,
+                ]}
+              >
+                <Icon
+                  name={item.icon as any}
+                  size={20}
+                  color={activeType === item.type ? "#fff" : colors.accent}
                 />
               </View>
-              <Text style={[styles.categoryTitle, activeType === item.type && styles.activeTitle]}>
+              <Text
+                style={[
+                  styles.categoryTitle,
+                  activeType === item.type && styles.activeTitle,
+                ]}
+              >
                 {item.title}
               </Text>
             </Button>
@@ -81,9 +110,7 @@ export default function ListScreen({ initialParams }: { initialParams?: any }) {
         </View>
       </View>
 
-      <View style={{ flex: 1 }}>
-        {renderContent()}
-      </View>
+      <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );
 }

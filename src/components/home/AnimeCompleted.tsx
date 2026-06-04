@@ -21,7 +21,7 @@ interface RenderItemProps {
   onPress: () => void;
 }
 
-const renderItem = ({ item, onPress }: RenderItemProps) => (
+const RenderItem = ({ item, onPress }: RenderItemProps) => (
   <AnimeCardComponent
     title={item.title}
     poster={item.poster}
@@ -40,8 +40,13 @@ export default function AnimeCompleted({
   const router = useRouter();
 
   const keyExtractor = useCallback((item: AnimeCard) => item.slug, []);
-  const handlePress = useCallback(
-    (slug: string) => () => router.push(`/detail/${slug}` as any),
+  const renderItem = useCallback(
+    ({ item }: { item: AnimeCard }) => (
+      <RenderItem
+        item={item}
+        onPress={() => router.push(`/detail/${item.slug}` as any)}
+      />
+    ),
     [router],
   );
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
+import { View, StyleSheet, FlatList } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, StyleSheet, FlatList, Dimensions } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import colors from "@/constants/colors";
@@ -79,8 +79,8 @@ export default function GenreDetailScreen() {
       <AnimeCardComponent
         title={item.title}
         poster={item.poster}
-        eps={item.type}
-        score={item.score.toString()}
+        eps={item.type || undefined}
+        score={item.score.toString() || undefined}
         subTitle={`${item.status || "Completed"}, ${item.year}`}
         onPress={() => router.push(`/detail/${item.slug}` as any)}
       />

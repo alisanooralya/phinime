@@ -18,15 +18,15 @@ interface AnimeOngoingProps {
 
 interface RenderItemProps {
   item: AnimeCard;
-  onPress?: () => void;
+  onPress: () => void;
 }
 
-const renderItem = ({ item, onPress }: RenderItemProps) => (
+const RenderItem = ({ item, onPress }: RenderItemProps) => (
   <AnimeCardComponent
     title={item.title}
     poster={item.poster}
     eps={item.type || undefined}
-    score={item.score || undefined}
+    score={item.score?.toString() || undefined}
     subTitle={item.year?.toString()}
     onPress={onPress}
   />
@@ -40,8 +40,13 @@ export default function AnimeOngoing({
   const router = useRouter();
 
   const keyExtractor = useCallback((item: AnimeCard) => item.slug, []);
-  const handlePress = useCallback(
-    (slug: string) => () => router.push(`/detail/${slug}` as any),
+  const renderItem = useCallback(
+    ({ item }: { item: AnimeCard }) => (
+      <RenderItem
+        item={item}
+        onPress={() => router.push(`/detail/${item.slug}` as any)}
+      />
+    ),
     [router],
   );
 

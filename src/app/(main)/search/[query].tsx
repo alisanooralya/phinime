@@ -23,7 +23,7 @@ export default function SearchScreen() {
     try {
       setLoading(true);
 
-      const response = await searchAnime(query, 1);
+      const response = await searchAnime(query);
 
       setResults(response.data.results);
     } catch (err: any) {
@@ -37,12 +37,12 @@ export default function SearchScreen() {
     fetchResults();
   }, [fetchResults]);
 
-  const renderItem = ({ item }: { item: AnimeListItem }) => (
+  const renderItem = ({ item }: { item: SearchResult }) => (
     <AnimeCard
       title={item.title}
       poster={item.poster}
       eps={item.type || undefined}
-      score={item.score.toString()}
+      score={item.score?.toString() || undefined}
       subTitle={`${item.status || "Completed"}, ${item.year}`}
       onPress={() => {
         router.push(`/detail/${item.slug}` as any);

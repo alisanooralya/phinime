@@ -35,7 +35,7 @@ export default function SearchIndex() {
     const trimmed = searchTerm.trim();
     if (!trimmed) return;
 
-    router.push(`/search/${trimmed}`);
+    router.push(`/search/${trimmed}` as any);
   };
 
   const handleDeleteHistory = async (item: string) => {

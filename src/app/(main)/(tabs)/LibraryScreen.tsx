@@ -1,13 +1,17 @@
 import { useState, useRef, useEffect, memo } from "react";
-import { View, StyleSheet, TouchableOpacity, Animated, Dimensions, LayoutChangeEvent } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  LayoutChangeEvent,
+} from "react-native";
 
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
 import Header from "@/components/Header";
 import HistoryScreen from "./HistoryScreen";
 import BookmarkScreen from "./BookmarkScreen";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const PreservedHistory = memo(HistoryScreen);
 const PreservedBookmark = memo(BookmarkScreen);
@@ -20,9 +24,9 @@ export default function LibraryScreen() {
 
   useEffect(() => {
     if (containerWidth === 0) return;
-    
+
     Animated.spring(slideAnim, {
-      toValue: activeTab === "history" ? 0 : (containerWidth / 2) - 4,
+      toValue: activeTab === "history" ? 0 : containerWidth / 2 - 4,
       useNativeDriver: true,
       friction: 8,
       tension: 50,
@@ -36,40 +40,61 @@ export default function LibraryScreen() {
   return (
     <View style={styles.container}>
       <Header title="library" scroll={scroll} />
-      
+
       <View style={styles.tabWrapper}>
         <View style={styles.tabContainer} onLayout={onTabLayout}>
           {containerWidth > 0 && (
-            <Animated.View 
+            <Animated.View
               style={[
-                styles.activeIndicator, 
-                { 
-                  width: (containerWidth / 2) - 2,
-                  transform: [{ translateX: slideAnim }] 
-                }
-              ]} 
+                styles.activeIndicator,
+                {
+                  width: containerWidth / 2 - 2,
+                  transform: [{ translateX: slideAnim }],
+                },
+              ]}
             />
           )}
-          <TouchableOpacity 
-            style={styles.tab} 
+          <TouchableOpacity
+            style={styles.tab}
             onPress={() => setActiveTab("history")}
           >
-            <Text style={[styles.tabText, activeTab === "history" && styles.activeTabText]}>History</Text>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "history" && styles.activeTabText,
+              ]}
+            >
+              History
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.tab} 
+          <TouchableOpacity
+            style={styles.tab}
             onPress={() => setActiveTab("bookmark")}
           >
-            <Text style={[styles.tabText, activeTab === "bookmark" && styles.activeTabText]}>Bookmark</Text>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "bookmark" && styles.activeTabText,
+              ]}
+            >
+              Bookmark
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={{ flex: 1 }}>
-        <View style={[styles.contentArea, activeTab !== "history" && styles.hidden]}>
+        <View
+          style={[styles.contentArea, activeTab !== "history" && styles.hidden]}
+        >
           <PreservedHistory isEmbedded />
         </View>
-        <View style={[styles.contentArea, activeTab !== "bookmark" && styles.hidden]}>
+        <View
+          style={[
+            styles.contentArea,
+            activeTab !== "bookmark" && styles.hidden,
+          ]}
+        >
           <PreservedBookmark isEmbedded />
         </View>
       </View>

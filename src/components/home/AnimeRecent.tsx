@@ -18,7 +18,7 @@ interface AnimeRecentProps {
 
 interface RenderItemProps {
   item: AnimeCard;
-  onPress?: () => void;
+  onPress: () => void;
 }
 
 const RenderItem = memo(({ item, onPress }: RenderItemProps) => {
@@ -33,10 +33,10 @@ const RenderItem = memo(({ item, onPress }: RenderItemProps) => {
   );
 });
 
-export default function AnimeRecent({ 
-  animeList, 
+export default function AnimeRecent({
+  animeList,
   loading,
-  onViewSchedule 
+  onViewSchedule,
 }: AnimeRecentProps) {
   const router = useRouter();
 

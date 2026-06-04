@@ -1,12 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState, useRef } from "react";
-import {
-  View,
-  StyleSheet,
-  Animated,
-  TouchableOpacity,
-  Keyboard,
-} from "react-native";
+import { StyleSheet, Animated, TouchableOpacity, Keyboard } from "react-native";
 
 import Icon from "../Icon";
 import Text from "../Text";
@@ -98,7 +92,7 @@ export default function HomeHeader({ scrollY }: Props) {
       if (user) {
         await saveSearchHistory(user.id, query.trim());
       }
-      router.push(`/search/${query.trim()}`);
+      router.push(`/search/${query.trim()}` as any);
     }
   };
 

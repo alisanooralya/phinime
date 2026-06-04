@@ -1,6 +1,5 @@
-import { View, StyleSheet, Animated } from "react-native";
+import { StyleSheet, Animated } from "react-native";
 
-import Text from "./Text";
 import Button from "./Button";
 import colors from "@/constants/colors";
 

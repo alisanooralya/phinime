@@ -7,7 +7,6 @@ import {
   StyleSheet,
   FlatList,
   Dimensions,
-  TouchableOpacity,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Animated,
