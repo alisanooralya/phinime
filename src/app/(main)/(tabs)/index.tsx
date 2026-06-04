@@ -12,10 +12,10 @@ import {
 import colors from "@/constants/colors";
 import Navbar from "@/components/Navbar";
 
+import ListScreen from "./ListScreen";
 import HomeScreen from "./HomeScreen";
 import ProfileScreen from "./ProfileScreen";
-import HistoryScreen from "./HistoryScreen";
-import BookmarkScreen from "./BookmarkScreen";
+import LibraryScreen from "./LibraryScreen";
 
 const TOTAL_TABS = 4;
 const SWIPE_THRESHOLD = 60;
@@ -55,10 +55,13 @@ function FadeTab({
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState(0);
+  const [tabParams, setTabParams] = useState<any>(null);
   const blurTargetRef = useRef<View | null>(null);
 
-  const handleSelectTab = useCallback((index: number) => {
+  const handleSelectTab = useCallback((index: number, params?: any) => {
     setActiveTab(index);
+    if (params) setTabParams(params);
+    else setTabParams(null);
   }, []);
 
   const onGestureEvent = useCallback(
@@ -71,12 +74,12 @@ export default function Index() {
       const isSwipeRight = translationX > SWIPE_THRESHOLD || velocityX > 500;
 
       if (isSwipeLeft && activeTab < TOTAL_TABS - 1) {
-        setActiveTab((prev) => prev + 1);
+        handleSelectTab(activeTab + 1);
       } else if (isSwipeRight && activeTab > 0) {
-        setActiveTab((prev) => prev - 1);
+        handleSelectTab(activeTab - 1);
       }
     },
-    [activeTab],
+    [activeTab, handleSelectTab],
   );
 
   return (
@@ -93,13 +96,13 @@ export default function Index() {
               >
                 <View style={{ flex: 1 }}>
                   <FadeTab isActive={activeTab === 0}>
-                    <HomeScreen />
+                    <HomeScreen onNavigateToList={(type) => handleSelectTab(1, { initialType: type })} />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 1}>
-                    <HistoryScreen />
+                    <ListScreen initialParams={tabParams} />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 2}>
-                    <BookmarkScreen />
+                    <LibraryScreen />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 3}>
                     <ProfileScreen />
@@ -110,7 +113,7 @@ export default function Index() {
 
             <Navbar
               selectedIndex={activeTab}
-              onSelect={handleSelectTab}
+              onSelect={(index) => handleSelectTab(index)}
               blurTargetRef={blurTargetRef}
             />
           </View>

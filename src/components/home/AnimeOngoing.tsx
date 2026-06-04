@@ -13,6 +13,7 @@ import { type AnimeCard } from "@/services/api";
 interface AnimeOngoingProps {
   animeList: AnimeCard[];
   loading?: boolean;
+  onViewAll?: () => void;
 }
 
 interface RenderItemProps {
@@ -21,20 +22,24 @@ interface RenderItemProps {
 }
 
 const renderItem = ({ item, onPress }: RenderItemProps) => (
-    <AnimeCardComponent
-      title={item.title}
-      poster={item.poster}
-      eps={item.type || undefined}
-      score={item.score || undefined}
-      subTitle={item.year?.toString()}
-      onPress={onPress}
-    />
+  <AnimeCardComponent
+    title={item.title}
+    poster={item.poster}
+    eps={item.type || undefined}
+    score={item.score || undefined}
+    subTitle={item.year?.toString()}
+    onPress={onPress}
+  />
 );
 
-export default function AnimeOngoing({ animeList, loading }: AnimeOngoingProps) {
+export default function AnimeOngoing({
+  animeList,
+  loading,
+  onViewAll,
+}: AnimeOngoingProps) {
   const router = useRouter();
 
-  const keyExtractor = useCallback((item: animeList) => item.slug, []);
+  const keyExtractor = useCallback((item: AnimeCard) => item.slug, []);
   const handlePress = useCallback(
     (slug: string) => () => router.push(`/detail/${slug}` as any),
     [router],
@@ -46,7 +51,7 @@ export default function AnimeOngoing({ animeList, loading }: AnimeOngoingProps) 
         <Text style={styles.sectionTitle}>Anime Ongoing</Text>
         <TouchableOpacity
           style={styles.scheduleBtn}
-          onPress={() => router.push("/anime-list/ongoing")}
+          onPress={onViewAll}
           activeOpacity={0.8}
         >
           <Text style={styles.scheduleBtnText}>Lihat Semua</Text>

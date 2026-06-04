@@ -146,7 +146,7 @@ const HistoryRow = memo(({ items, onPress }: RowProps) => (
   </View>
 ));
 
-export default function HistoryScreen() {
+export default function HistoryScreen({ isEmbedded }: { isEmbedded?: boolean }) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<SectionList<WatchHistory[], HistorySection>>(null);
@@ -204,7 +204,7 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="history" scroll={scroll} />
+      {!isEmbedded && <Header title="history" scroll={scroll} />}
       {loading ? (
         <View style={styles.loadingWrapper}>
           <Loader visible={loading} />
@@ -216,7 +216,7 @@ export default function HistoryScreen() {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           keyExtractor={keyExtractor}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, isEmbedded && { marginTop: 0 }]}
           showsVerticalScrollIndicator={false}
           stickySectionHeadersEnabled={false}
           removeClippedSubviews

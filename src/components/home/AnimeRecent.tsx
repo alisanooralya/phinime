@@ -13,6 +13,7 @@ import { type AnimeCard } from "@/services/api";
 interface AnimeRecentProps {
   animeList: AnimeCard[];
   loading?: boolean;
+  onViewSchedule?: () => void;
 }
 
 interface RenderItemProps {
@@ -32,7 +33,11 @@ const RenderItem = memo(({ item, onPress }: RenderItemProps) => {
   );
 });
 
-export default function AnimeRecent({ animeList, loading }: AnimeRecentProps) {
+export default function AnimeRecent({ 
+  animeList, 
+  loading,
+  onViewSchedule 
+}: AnimeRecentProps) {
   const router = useRouter();
 
   const handlePress = useCallback(
@@ -46,7 +51,7 @@ export default function AnimeRecent({ animeList, loading }: AnimeRecentProps) {
         <Text style={styles.sectionTitle}>Anime Update</Text>
         <TouchableOpacity
           style={styles.scheduleBtn}
-          onPress={() => router.push("/anime-list/schedule")}
+          onPress={onViewSchedule}
           activeOpacity={0.8}
         >
           <Text style={styles.scheduleBtnText}>Lihat Jadwal</Text>

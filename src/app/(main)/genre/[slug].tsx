@@ -5,11 +5,9 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
-import AnimeCardComponent from "@/components/AnimeCard";
 import BackButton from "@/components/BackButton";
+import AnimeCardComponent from "@/components/AnimeCard";
 import { getGenreDetail, getGenres, type AnimeCard } from "@/services/api";
-
-const COLUMN_COUNT = 3;
 
 export default function GenreDetailScreen() {
   const router = useRouter();
@@ -82,8 +80,8 @@ export default function GenreDetailScreen() {
         title={item.title}
         poster={item.poster}
         eps={item.type}
-        score={`item.score`}
-        subTitle={`item.status`}
+        score={item.score.toString()}
+        subTitle={`${item.status || "Completed"}, ${item.year}`}
         onPress={() => router.push(`/detail/${item.slug}` as any)}
       />
     ),
@@ -106,7 +104,7 @@ export default function GenreDetailScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <BackButton title={genreTitle} />
+            <BackButton title={genreTitle || "Loading..."} />
           </View>
 
           {loading ? (
@@ -118,7 +116,7 @@ export default function GenreDetailScreen() {
               data={animeList}
               renderItem={renderAnimeCard}
               keyExtractor={keyExtractor}
-              numColumns={COLUMN_COUNT}
+              numColumns={3}
               columnWrapperStyle={styles.columnWrapper}
               contentContainerStyle={styles.listContent}
               scrollIndicatorInsets={{ right: 1 }}

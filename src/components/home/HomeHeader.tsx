@@ -15,8 +15,8 @@ import TextInput from "../TextInput";
 
 import colors from "@/constants/colors";
 import { useToast } from "@/hooks/useAlert";
-import { saveSearchHistory } from "@/services/cache";
 import { getCurrentUser } from "@/services/auth";
+import { saveSearchHistory } from "@/services/search";
 
 type Props = {
   scrollY: Animated.Value;

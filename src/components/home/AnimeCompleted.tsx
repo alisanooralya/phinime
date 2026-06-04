@@ -13,6 +13,7 @@ import { type AnimeCard } from "@/services/api";
 interface AnimeCompletedProps {
   animeList: AnimeCard[];
   loading?: boolean;
+  onViewAll?: () => void;
 }
 
 interface RenderItemProps {
@@ -34,10 +35,11 @@ const renderItem = ({ item, onPress }: RenderItemProps) => (
 export default function AnimeCompleted({
   animeList,
   loading,
+  onViewAll,
 }: AnimeCompletedProps) {
   const router = useRouter();
 
-  const keyExtractor = useCallback((item: animeList) => item.slug, []);
+  const keyExtractor = useCallback((item: AnimeCard) => item.slug, []);
   const handlePress = useCallback(
     (slug: string) => () => router.push(`/detail/${slug}` as any),
     [router],
@@ -49,7 +51,7 @@ export default function AnimeCompleted({
         <Text style={styles.sectionTitle}>Anime Completed</Text>
         <TouchableOpacity
           style={styles.scheduleBtn}
-          onPress={() => router.push("/anime-list/completed")}
+          onPress={onViewAll}
           activeOpacity={0.8}
         >
           <Text style={styles.scheduleBtnText}>Lihat Semua</Text>

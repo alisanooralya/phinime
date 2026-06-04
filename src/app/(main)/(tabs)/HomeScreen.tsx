@@ -33,7 +33,7 @@ interface HomeState {
   completed: AnimeCard[];
 }
 
-export default function Home() {
+export default function Home({ onNavigateToList }: { onNavigateToList?: (type: string) => void }) {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,13 +103,25 @@ export default function Home() {
         <GenreList />
         <View style={styles.barrier} />
 
-        <AnimeRecent animeList={data?.recent || []} loading={!data} />
+        <AnimeRecent 
+          animeList={data?.recent || []} 
+          loading={!data} 
+          onViewSchedule={() => onNavigateToList?.("Schedule")}
+        />
         <View style={styles.barrier} />
 
-        <AnimeOngoing animeList={data?.ongoing || []} loading={!data} />
+        <AnimeOngoing 
+          animeList={data?.ongoing || []} 
+          loading={!data} 
+          onViewAll={() => onNavigateToList?.("Ongoing")}
+        />
         <View style={styles.barrier} />
 
-        <AnimeCompleted animeList={data?.completed || []} loading={!data} />
+        <AnimeCompleted 
+          animeList={data?.completed || []} 
+          loading={!data} 
+          onViewAll={() => onNavigateToList?.("Completed")}
+        />
         <View style={styles.barrier} />
 
         <View style={styles.padding} />

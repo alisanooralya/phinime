@@ -9,15 +9,13 @@ import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
 import AnimeCard from "@/components/AnimeCard";
 import BackButton from "@/components/BackButton";
-
-import { getCurrentUser } from "@/services/auth";
-import { searchAnime, type AnimeListItem } from "@/services/samehadaku";
+import { searchAnime, type SearchResult } from "@/services/api";
 
 export default function SearchScreen() {
   const router = useRouter();
   const { query } = useLocalSearchParams<{ query: string }>();
   const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<AnimeListItem[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
 
   const fetchResults = useCallback(async () => {
     if (!query) return;
@@ -25,10 +23,9 @@ export default function SearchScreen() {
     try {
       setLoading(true);
 
-      const user = await getCurrentUser();
-      const response = await searchAnime(query, 1, user?.id);
+      const response = await searchAnime(query, 1);
 
-      setResults(response.animeList);
+      setResults(response.data.results);
     } catch (err: any) {
       console.error(err.message);
     } finally {
@@ -44,11 +41,11 @@ export default function SearchScreen() {
     <AnimeCard
       title={item.title}
       poster={item.poster}
-      eps={item.type}
-      score={item.score}
-      subTitle={item.status}
+      eps={item.type || undefined}
+      score={item.score.toString()}
+      subTitle={`${item.status || "Completed"}, ${item.year}`}
       onPress={() => {
-        router.push(`/detail/${item.animeId}` as any);
+        router.push(`/detail/${item.slug}` as any);
       }}
     />
   );
@@ -76,7 +73,7 @@ export default function SearchScreen() {
         <FlatList
           data={results}
           renderItem={renderItem}
-          keyExtractor={(item) => item.animeId}
+          keyExtractor={(item) => item.slug}
           numColumns={3}
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.columnWrapper}

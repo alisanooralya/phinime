@@ -67,7 +67,7 @@ const BookmarkCard = memo(({ item, onPress, onLongPress }: CardProps) => (
   />
 ));
 
-export default function BookmarkScreen() {
+export default function BookmarkScreen({ isEmbedded }: { isEmbedded?: boolean }) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<FlatList>(null);
@@ -147,8 +147,8 @@ export default function BookmarkScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="bookmark" scroll={scroll} />
-      <View style={styles.headerRight}>
+      {!isEmbedded && <Header title="bookmark" scroll={scroll} />}
+      <View style={[styles.headerRight, isEmbedded && { top: -45 }]}>
         {bookmarks.length > 0 && (
           <Text style={styles.countText}>{bookmarks.length} anime</Text>
         )}
@@ -169,7 +169,7 @@ export default function BookmarkScreen() {
           keyExtractor={keyExtractor}
           numColumns={3}
           columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, isEmbedded && { marginTop: 0 }]}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews
           initialNumToRender={6}
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   headerRight: {
     zIndex: 99,
     position: "absolute",
-    top: 12,
+    top: 0,
     right: PADDING,
     alignItems: "flex-end",
   },

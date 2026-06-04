@@ -14,8 +14,8 @@ import colors from "@/constants/colors";
 
 const ITEMS = [
   { icon: "House" },
-  { icon: "History" },
-  { icon: "Bookmark" },
+  { icon: "LayoutList" },
+  { icon: "Library" },
   { icon: "User" },
 ];
 
