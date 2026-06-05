@@ -1,3 +1,4 @@
+import { errorBus } from "./errorBus";
 import type { ApiResponse } from "../types";
 
 /**
@@ -44,6 +45,9 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
+    if (res.status === 502 || res.status >= 500) {
+      errorBus.emit(res.status);
+    }
     throw new Error(`HTTP ${res.status} ${res.statusText} — ${url}`);
   }
 
