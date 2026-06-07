@@ -1,35 +1,33 @@
 import { useRef } from "react";
-import { LinearGradient } from "expo-linear-gradient";
-import { 
-  View, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Animated, 
-  Dimensions 
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
 } from "react-native";
+import { Image } from "expo-image";
 
-import Icon from "./Icon";
 import Text from "./Text";
 import colors from "@/constants/colors";
 
 interface EpisodeCardProps {
   title: string;
+  subtitle?: string;
+  poster?: string;
   onPress: () => void;
-  isActive?: boolean;
-  isWatched?: boolean;
 }
 
-export default function EpisodeCard({ 
-  title, 
-  onPress, 
-  isActive = false,
-  isWatched = false 
+export default function EpisodeCard({
+  title,
+  subtitle,
+  poster,
+  onPress,
 }: EpisodeCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.96,
+      toValue: 0.98,
       useNativeDriver: true,
     }).start();
   };
@@ -44,66 +42,31 @@ export default function EpisodeCard({
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container, 
-        { transform: [{ scale: scaleAnim }] }
-      ]}
+    <Animated.View
+      style={[styles.container, { transform: [{ scale: scaleAnim }] }]}
     >
       <TouchableOpacity
         activeOpacity={1}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={[
-          styles.touchable,
-          isActive && styles.activeCard,
-          isWatched && !isActive && styles.watchedCard
-        ]}
+        style={styles.touchable}
       >
-        {isActive && (
-          <LinearGradient
-            colors={[colors.accent + "33", colors.accent + "05"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-          />
-        )}
-
-        <View style={[styles.iconWrapper, isActive && styles.activeIconWrapper]}>
-          <Icon 
-            name={isActive ? "Pause" : "Play"} 
-            size={18} 
-            color={isActive ? "#fff" : (isWatched ? colors.textDark : colors.accent)}
-            fill={isActive ? "#fff" : "transparent"}
+        <View style={styles.thumbnailContainer}>
+          <Image
+            source={{ uri: poster || "" }}
+            style={styles.thumbnail}
+            contentFit="cover"
+            transition={200}
           />
         </View>
 
         <View style={styles.content}>
-          <Text 
-            style={[
-              styles.title, 
-              isActive && styles.activeText,
-              isWatched && !isActive && styles.watchedText
-            ]} 
-            numberOfLines={1}
-          >
+          <Text style={styles.title} numberOfLines={2}>
             {title}
           </Text>
-          <Text style={styles.subtitle}>
-            {isActive ? "Sedang diputar" : isWatched ? "Sudah ditonton" : "Klik untuk menonton"}
-          </Text>
+          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
-
-        {isWatched && !isActive && (
-          <View style={styles.checkIcon}>
-            <Icon name="Check" size={14} color={colors.accent} />
-          </View>
-        )}
-        
-        {!isWatched && !isActive && (
-          <Icon name="ChevronRight" size={18} color="rgba(255,255,255,0.15)" />
-        )}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -116,57 +79,33 @@ const styles = StyleSheet.create({
   touchable: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 0.8,
-    borderColor: "rgba(255,255,255,0.2)",
+    gap: 12,
+  },
+  thumbnailContainer: {
+    width: 140,
+    aspectRatio: 16 / 9,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     overflow: "hidden",
+    position: "relative",
   },
-  activeCard: {
-    borderColor: colors.accent,
-    backgroundColor: "rgba(255,107,0,0.1)",
-  },
-  watchedCard: {
-    opacity: 0.8,
-  },
-  iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeIconWrapper: {
-    backgroundColor: colors.accent,
+  thumbnail: {
+    width: "100%",
+    height: "100%",
   },
   content: {
     flex: 1,
-    marginLeft: 14,
-    gap: 2,
+    justifyContent: "center",
+    gap: 4,
   },
   title: {
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "600",
     color: colors.text,
-  },
-  activeText: {
-    color: colors.accent,
-  },
-  watchedText: {
-    color: colors.textDark,
+    lineHeight: 20,
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.textDark,
-  },
-  checkIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "rgba(255,107,0,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

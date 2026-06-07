@@ -10,6 +10,7 @@ const COLUMN_COUNT = 3;
 const GAP = 8;
 const CARD_WIDTH =
   (SCREEN_WIDTH - (32 + (COLUMN_COUNT - 1) * GAP)) / COLUMN_COUNT;
+const CARD_HEIGHT = CARD_WIDTH * 1.5;
 
 interface AnimeCardProps {
   title: string;
@@ -17,6 +18,7 @@ interface AnimeCardProps {
   eps?: string;
   score?: string;
   subTitle?: string;
+  width?: number | string;
   onPress: () => void;
   onLongPress?: () => void;
 }
@@ -27,12 +29,13 @@ const AnimeCard = ({
   eps,
   score,
   subTitle,
+  width,
   onPress,
   onLongPress,
 }: AnimeCardProps) => {
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, width ? { width } : {}]}
       activeOpacity={0.8}
       onPress={onPress}
       onLongPress={onLongPress}
@@ -75,7 +78,7 @@ export default memo(AnimeCard);
 const styles = StyleSheet.create({
   container: {
     width: CARD_WIDTH,
-    aspectRatio: 1 / 1.5,
+    height: CARD_HEIGHT,
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: colors.secondary,

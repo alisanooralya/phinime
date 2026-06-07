@@ -1,32 +1,34 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState, useRef, useMemo } from "react";
-import { 
-  View, 
-  StyleSheet, 
-  ScrollView, 
-  Dimensions, 
-  Animated 
-} from "react-native";
+import { WebView } from "react-native-webview";
+import { useEffect, useState, useRef } from "react";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Pressable,
+} from "react-native";
 
+import Icon from "@/components/Icon";
 import Text from "@/components/Text";
 import colors from "@/constants/colors";
+import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import BackButton from "@/components/BackButton";
 import EpisodeCard from "@/components/EpisodeCard";
-import Icon from "@/components/Icon";
-
-import { getEpisodeDetail, type EpisodeDetailData } from "@/services/api/endpoints/episode";
+import { getEpisodeDetail, type EpisodeDetailData } from "@/services/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function WatchScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  
+
   const [loading, setLoading] = useState(true);
   const [episode, setEpisode] = useState<EpisodeDetailData | null>(null);
-  const scroll = useRef(new Animated.Value(0)).current;
+  const [activeMirror, setActiveMirror] = useState(0);
 
   useEffect(() => {
     fetchEpisode();
@@ -39,6 +41,7 @@ export default function WatchScreen() {
       const res = await getEpisodeDetail(slug);
       if (res.ok) {
         setEpisode(res.data);
+        setActiveMirror(0);
       }
     } catch (err) {
       console.error("[WatchScreen] Error:", err);
@@ -46,6 +49,18 @@ export default function WatchScreen() {
       setLoading(false);
     }
   }
+
+  const currentMirror = episode?.streamingMirrors[activeMirror];
+  const isDirectVideo =
+    currentMirror?.embedType === "direct" ||
+    currentMirror?.embedUrl.match(/\.(mp4|m3u8|webm)$|googleusercontent/);
+
+  const player = useVideoPlayer(
+    isDirectVideo ? currentMirror?.embedUrl : null,
+    (player) => {
+      player.loop = false;
+    },
+  );
 
   if (loading) {
     return (
@@ -58,27 +73,125 @@ export default function WatchScreen() {
   if (!episode) return null;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <View style={styles.header}>
-        <BackButton title={episode.anime.title} />
+        <BackButton title={`Episode ${episode.episodeNumber}`} />
       </View>
 
       <View style={styles.playerContainer}>
-        {/* Placeholder for Video Player */}
-        <View style={styles.playerPlaceholder}>
-          <Icon name="Play" size={48} color="#fff" fill="rgba(255,255,255,0.2)" />
-          <Text style={styles.playerText}>Video Player Placeholder</Text>
-        </View>
+        {isDirectVideo ? (
+          <VideoView
+            player={player}
+            style={styles.videoPlayer}
+            allowsFullscreen
+            allowsPictureInPicture
+          />
+        ) : (
+          <WebView
+            source={{ uri: currentMirror?.embedUrl || "" }}
+            style={styles.videoPlayer}
+            allowsFullscreenVideo
+            javaScriptEnabled
+            domStorageEnabled
+          />
+        )}
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.infoSection}>
-          <Text style={styles.episodeTitle}>{episode.title}</Text>
-          <Text style={styles.animeTitle}>{episode.anime.title}</Text>
+          <Text style={styles.episodeTitle}>Episode {episode.episodeNumber}</Text>
+          <Text style={styles.animeTitle}>{episode.title}</Text>
+        </View>
+
+        {episode.streamingMirrors.length > 1 && (
+          <View style={styles.mirrorSection}>
+            <Text style={styles.subSectionTitle}>Pilih Server</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.mirrorList}
+            >
+              {episode.streamingMirrors.map((mirror, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setActiveMirror(index)}
+                  style={[
+                    styles.mirrorButton,
+                    activeMirror === index && styles.mirrorButtonActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.mirrorText,
+                      activeMirror === index && styles.mirrorTextActive,
+                    ]}
+                  >
+                    {mirror.quality}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={styles.navigationSection}>
+          <Button
+            wrapper={{ flex: 1 }}
+            button={[
+              styles.navBtn,
+              !episode.prevEpisode && styles.navBtnDisabled,
+            ]}
+            onPress={() =>
+              episode.prevEpisode &&
+              router.push(`/watch/${episode.prevEpisode.slug}` as any)
+            }
+            disabled={!episode.prevEpisode}
+          >
+            <Icon
+              name="ChevronLeft"
+              size={20}
+              color={episode.prevEpisode ? colors.text : colors.textDark}
+            />
+            <Text
+              style={[
+                styles.navText,
+                !episode.prevEpisode && styles.navTextDisabled,
+              ]}
+            >
+              Prev
+            </Text>
+          </Button>
+
+          <Button
+            wrapper={{ flex: 1 }}
+            button={[
+              styles.navBtn,
+              !episode.nextEpisode && styles.navBtnDisabled,
+            ]}
+            onPress={() =>
+              episode.nextEpisode &&
+              router.push(`/watch/${episode.nextEpisode.slug}` as any)
+            }
+            disabled={!episode.nextEpisode}
+          >
+            <Text
+              style={[
+                styles.navText,
+                !episode.nextEpisode && styles.navTextDisabled,
+              ]}
+            >
+              Next
+            </Text>
+            <Icon
+              name="ChevronRight"
+              size={20}
+              color={episode.nextEpisode ? colors.text : colors.textDark}
+            />
+          </Button>
         </View>
 
         <View style={styles.divider} />
@@ -86,26 +199,31 @@ export default function WatchScreen() {
         <View style={styles.episodeListHeader}>
           <Text style={styles.sectionTitle}>Semua Episode</Text>
           <View style={styles.countBadge}>
-            <Text style={styles.countText}>{episode.otherEpisodes.length} Eps</Text>
+            <Text style={styles.countText}>
+              {episode.otherEpisodes.length} Eps
+            </Text>
           </View>
         </View>
 
-        {episode.otherEpisodes.map((ep) => (
-          <EpisodeCard
-            key={ep.slug}
-            title={ep.title}
-            isActive={ep.slug === slug}
-            onPress={() => {
-              if (ep.slug !== slug) {
-                router.push(`/watch/${ep.slug}` as any);
-              }
-            }}
-          />
-        ))}
+        <View style={styles.episodeGrid}>
+          {episode.otherEpisodes.map((ep) => (
+            <EpisodeCard
+              key={ep.slug}
+              title={ep.title}
+              subtitle={ep.updatedAt}
+              poster={ep.poster}
+              onPress={() => {
+                if (ep.slug !== slug) {
+                  router.push(`/watch/${ep.slug}` as any);
+                }
+              }}
+            />
+          ))}
+        </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -121,7 +239,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingTop: 10,
     paddingHorizontal: 16,
     paddingBottom: 10,
   },
@@ -130,16 +247,9 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     backgroundColor: "#000",
   },
-  playerPlaceholder: {
+  videoPlayer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  playerText: {
-    color: "rgba(255,255,255,0.5)",
-    fontSize: 14,
-    fontWeight: "600",
+    backgroundColor: "#000",
   },
   content: {
     flex: 1,
@@ -152,19 +262,74 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   episodeTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: colors.text,
-  },
-  animeTitle: {
     fontSize: 14,
     color: colors.textSecondary,
     fontWeight: "500",
   },
+  animeTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: colors.text,
+  },
+  mirrorSection: {
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+  subSectionTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 12,
+  },
+  mirrorList: {
+    gap: 10,
+  },
+  mirrorButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  mirrorButtonActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  mirrorText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: "600",
+  },
+  mirrorTextActive: {
+    color: "#FFF",
+  },
+  navigationSection: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 12,
+    marginTop: 24,
+  },
+  navBtn: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    gap: 8,
+    height: 44,
+  },
+  navBtnDisabled: {
+    opacity: 0.5,
+  },
+  navText: {
+    color: colors.text,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  navTextDisabled: {
+    color: colors.textDark,
+  },
   divider: {
     height: 1,
     backgroundColor: "rgba(255,255,255,0.06)",
-    marginVertical: 20,
+    marginVertical: 24,
     marginHorizontal: 16,
   },
   episodeListHeader: {
@@ -189,5 +354,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: colors.textDark,
+  },
+  episodeGrid: {
+    paddingHorizontal: 16,
+    gap: 10,
   },
 });

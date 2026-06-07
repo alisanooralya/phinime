@@ -19,6 +19,9 @@ function SkeletonChip() {
 const GenreChip = memo(({ item, onPress }: GenreChipProps) => (
   <TouchableOpacity style={styles.chip} activeOpacity={0.8} onPress={onPress}>
     <Text style={styles.chipText}>{item.name}</Text>
+    <View style={styles.countBadge}>
+      <Text style={styles.countText}>{item.count}</Text>
+    </View>
   </TouchableOpacity>
 ));
 
@@ -106,14 +109,28 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
+    flexDirection: "row",
     backgroundColor: colors.secondary,
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 10,
+    gap: 6,
   },
   chipText: {
     color: colors.text,
     fontSize: 10,
+    fontWeight: "600",
+  },
+  countBadge: {
+    backgroundColor: colors.accentDark,
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  countText: {
+    fontSize: 8,
+    color: colors.textSecondary,
     fontWeight: "600",
   },
   skeletonRow: {

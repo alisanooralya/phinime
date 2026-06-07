@@ -21,19 +21,25 @@ import AnimeCompleted from "@/components/home/AnimeCompleted";
 import {
   getPopularAnime,
   getOngoingAnime,
+  getRecentAnime,
   getAnimeList,
   type PopularAnimeItem,
   type AnimeCard,
+  type RecentAnimeItem,
 } from "@/services/api";
 
 interface HomeState {
   top: PopularAnimeItem[];
-  recent: AnimeCard[];
+  recent: RecentAnimeItem[];
   ongoing: AnimeCard[];
   completed: AnimeCard[];
 }
 
-export default function Home({ onNavigateToList }: { onNavigateToList?: (type: string) => void }) {
+export default function Home({
+  onNavigateToList,
+}: {
+  onNavigateToList?: (type: string) => void;
+}) {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,14 +49,14 @@ export default function Home({ onNavigateToList }: { onNavigateToList?: (type: s
     try {
       const [po, re, on, co] = await Promise.all([
         getPopularAnime(),
-        getOngoingAnime(),
+        getRecentAnime(),
         getAnimeList({ status: "ongoing" }),
         getAnimeList({ status: "completed" }),
       ]);
 
       setData({
         top: po.ok ? po.data.mingguan : [],
-        recent: re.ok ? re.data.anime : [],
+        recent: re.ok ? re.data : [],
         ongoing: on.ok ? on.data.anime : [],
         completed: co.ok ? co.data.anime : [],
       });
@@ -103,23 +109,23 @@ export default function Home({ onNavigateToList }: { onNavigateToList?: (type: s
         <GenreList />
         <View style={styles.barrier} />
 
-        <AnimeRecent 
-          animeList={data?.recent || []} 
-          loading={!data} 
+        <AnimeRecent
+          animeList={data?.recent || []}
+          loading={!data}
           onViewSchedule={() => onNavigateToList?.("Schedule")}
         />
         <View style={styles.barrier} />
 
-        <AnimeOngoing 
-          animeList={data?.ongoing || []} 
-          loading={!data} 
+        <AnimeOngoing
+          animeList={data?.ongoing || []}
+          loading={!data}
           onViewAll={() => onNavigateToList?.("Ongoing")}
         />
         <View style={styles.barrier} />
 
-        <AnimeCompleted 
-          animeList={data?.completed || []} 
-          loading={!data} 
+        <AnimeCompleted
+          animeList={data?.completed || []}
+          loading={!data}
           onViewAll={() => onNavigateToList?.("Completed")}
         />
         <View style={styles.barrier} />

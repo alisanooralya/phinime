@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, memo } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 
 import Icon from "../Icon";
 import Text from "../Text";
@@ -8,26 +8,35 @@ import Loader from "../Loader";
 import AnimeCardComponent from "../AnimeCard";
 
 import colors from "@/constants/colors";
-import { type AnimeCard } from "@/services/api";
+import { type RecentAnimeItem } from "@/services/api";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const GAP = 12;
+const RECENT_CARD_WIDTH = (SCREEN_WIDTH - (32 + GAP)) / 2;
 
 interface AnimeRecentProps {
-  animeList: AnimeCard[];
+  animeList: RecentAnimeItem[];
   loading?: boolean;
   onViewSchedule?: () => void;
 }
 
 interface RenderItemProps {
-  item: AnimeCard;
+  item: RecentAnimeItem;
   onPress: () => void;
 }
 
 const RenderItem = memo(({ item, onPress }: RenderItemProps) => {
+  const subtitle = item.episode.includes("Segera")
+    ? `${item.episode}, ${item.uploadedAt}`
+    : `Episode ${item.episode}, ${item.uploadedAt}`;
+
   return (
     <AnimeCardComponent
       title={item.title}
       poster={item.poster}
-      eps={item.status || undefined}
-      subTitle={item.year?.toString()}
+      score={item.status || undefined}
+      subTitle={subtitle}
+      width={RECENT_CARD_WIDTH}
       onPress={onPress}
     />
   );
@@ -41,7 +50,7 @@ export default function AnimeRecent({
   const router = useRouter();
 
   const handlePress = useCallback(
-    (slug: string) => () => router.push(`/detail/${slug}` as any),
+    (slug: string) => () => router.push(`/watch/${slug}` as any),
     [router],
   );
 
@@ -65,10 +74,12 @@ export default function AnimeRecent({
         </View>
       ) : (
         <View style={styles.listContent}>
-          {animeList.slice(0, 15).map((item) => (
-            <View key={item.slug}>
-              <RenderItem item={item} onPress={handlePress(item.slug)} />
-            </View>
+          {animeList.slice(0, 14).map((item) => (
+            <RenderItem
+              key={item.slug}
+              item={item}
+              onPress={handlePress(item.slug)}
+            />
           ))}
         </View>
       )}

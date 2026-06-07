@@ -21,20 +21,22 @@ export default function MaintenanceScreen({ onRetry }: MaintenanceScreenProps) {
         <View style={styles.iconWrapper}>
           <Icon name="ServerCrash" size={80} color={colors.text} />
         </View>
-        
+
         <Text style={styles.title}>Server Maintenance</Text>
         <Text style={styles.subtitle}>
-          Dunia simulasi ini sedang beristirahat dalam keheningan yang tenang. Istirahatlah sejenak, kekasihku, dan kembalilah saat takdir telah bersiap.
+          Dunia simulasi ini sedang beristirahat dalam keheningan yang tenang.
+          Istirahatlah sejenak, kekasihku, dan kembalilah saat takdir telah
+          bersiap.
         </Text>
 
         <View style={styles.buttonContainer}>
-          <Button 
-            title="Coba Lagi" 
+          <Button
+            title="Coba Lagi"
             onPress={onRetry}
             button={styles.retryBtn}
           />
-          <Button 
-            title="Keluar Aplikasi" 
+          <Button
+            title="Keluar Aplikasi"
             onPress={handleExit}
             button={styles.exitBtn}
             text={styles.exitText}
@@ -92,5 +94,5 @@ const styles = StyleSheet.create({
   },
   exitText: {
     color: colors.textDark,
-  }
+  },
 });

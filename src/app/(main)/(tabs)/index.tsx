@@ -96,7 +96,11 @@ export default function Index() {
               >
                 <View style={{ flex: 1 }}>
                   <FadeTab isActive={activeTab === 0}>
-                    <HomeScreen onNavigateToList={(type) => handleSelectTab(1, { initialType: type })} />
+                    <HomeScreen
+                      onNavigateToList={(type) =>
+                        handleSelectTab(1, { initialType: type })
+                      }
+                    />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 1}>
                     <ListScreen initialParams={tabParams} />

@@ -5,7 +5,16 @@ import type {
   AnimeListParams,
   AnimeDetailData,
   PopularAnimeData,
+  RecentAnimeData,
 } from "../types";
+
+/**
+ * GET /api/anime/recent
+ * Mengambil daftar anime yang baru diperbarui.
+ */
+export async function getRecentAnime(): Promise<ApiResponse<RecentAnimeData>> {
+  return apiFetch<RecentAnimeData>("/api/anime/recent");
+}
 
 /**
  * GET /api/anime?page=1&status=ongoing&type=tv&order=update

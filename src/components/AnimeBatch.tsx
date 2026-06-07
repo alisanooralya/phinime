@@ -1,9 +1,4 @@
-import { 
-  View, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Dimensions 
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 import Text from "./Text";
@@ -22,7 +17,7 @@ export default function AnimeBatch({ title, batchId }: AnimeBatchProps) {
   };
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={0.8}
       onPress={handleDownload}
       style={styles.container}
@@ -33,7 +28,7 @@ export default function AnimeBatch({ title, batchId }: AnimeBatchProps) {
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
-      
+
       <View style={styles.iconBox}>
         <Icon name="Download" size={20} color="#4ADE80" />
       </View>

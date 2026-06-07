@@ -22,7 +22,10 @@ export default function CompletedList() {
         if (!isRefresh) setLoading(true);
       }
 
-      const response = await getAnimeList({ page: pageNum, status: "completed" });
+      const response = await getAnimeList({
+        page: pageNum,
+        status: "completed",
+      });
       if (response.ok) {
         const newList = response.data.anime;
         if (isRefresh) {

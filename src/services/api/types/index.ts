@@ -66,12 +66,23 @@ export interface AnimeListData {
 
 // ─── Ongoing / Popular ───────────────────────────────────────
 
+export interface RecentAnimeItem {
+  title: string;
+  slug: string;
+  poster: string;
+  episode: string;
+  type: string;
+  status: string;
+  uploadedAt: string;
+}
+
+export type RecentAnimeData = RecentAnimeItem[];
+
 export interface PopularAnimeItem {
   rank: number;
   title: string;
   slug: string;
   endpoint: string;
-  url_sumber: string;
   thumbnail: string;
   score: string;
   type: string;
@@ -87,14 +98,16 @@ export interface PopularAnimeData {
 
 // ─── Anime Detail ────────────────────────────────────────────
 
-export interface EpisodeRef {
+export interface OtherEpisode {
   title: string;
   slug: string;
   episodeNumber: number;
 }
 
+
 export interface AnimeDetailData {
   title: string;
+  alternative: string;
   slug: string;
   poster: string;
   score: number;
@@ -103,15 +116,23 @@ export interface AnimeDetailData {
   year: number;
   duration: string | null;
   season: string | null;
+  episode: string | null;
   studio: string | null;
+  producer: string | null;
   synopsis: string;
+  gallery: unknown[];
   genres: SlugName[];
   directors: SlugName[];
   cast: SlugName[];
-  totalEpisodes: number;
   episodes: EpisodeRef[];
   batchDownloads: unknown[];
-  relatedAnime: { title: string; slug: string; poster: string }[];
+  relatedAnime: {
+    title: string;
+    type: string;
+    score: number;
+    slug: string;
+    poster: string;
+  }[];
 }
 
 // ─── Episode Detail ──────────────────────────────────────────
@@ -124,15 +145,11 @@ export interface StreamingMirror {
   quality: string;
 }
 
-export interface DownloadLink {
-  quality: string;
-  label: string;
-  url: string;
-}
-
 export interface OtherEpisode {
   title: string;
   slug: string;
+  poster: string;
+  updatedAt: string;
   episodeNumber: number;
 }
 
@@ -141,13 +158,10 @@ export interface EpisodeDetailData {
   slug: string;
   episodeNumber: number;
   episodeId: number;
-  anime: { title: string; slug: string };
   streamingMirrors: StreamingMirror[];
-  downloadLinks: DownloadLink[];
   prevEpisode: { slug: string; url: string } | null;
   nextEpisode: { slug: string; url: string } | null;
   otherEpisodes: OtherEpisode[];
-  genres: SlugName[];
 }
 
 // ─── Schedule ────────────────────────────────────────────────
@@ -168,6 +182,7 @@ export type ScheduleDay =
 export interface ScheduleAnimeItem {
   title: string;
   slug: string;
+  poster: string;
   time: string;
   type: string;
 }

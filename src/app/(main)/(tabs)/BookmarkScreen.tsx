@@ -67,7 +67,11 @@ const BookmarkCard = memo(({ item, onPress, onLongPress }: CardProps) => (
   />
 ));
 
-export default function BookmarkScreen({ isEmbedded }: { isEmbedded?: boolean }) {
+export default function BookmarkScreen({
+  isEmbedded,
+}: {
+  isEmbedded?: boolean;
+}) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<FlatList>(null);
@@ -169,7 +173,10 @@ export default function BookmarkScreen({ isEmbedded }: { isEmbedded?: boolean })
           keyExtractor={keyExtractor}
           numColumns={3}
           columnWrapperStyle={styles.row}
-          contentContainerStyle={[styles.listContent, isEmbedded && { marginTop: 0 }]}
+          contentContainerStyle={[
+            styles.listContent,
+            isEmbedded && { marginTop: 0 },
+          ]}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews
           initialNumToRender={6}

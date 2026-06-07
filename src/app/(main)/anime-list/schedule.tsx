@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
@@ -92,21 +93,26 @@ function AnimeCard({ item, onPress, isLast }: AnimeCardProps) {
       activeOpacity={0.75}
       onPress={() => onPress(item.slug)}
     >
-      <View style={styles.timelineLine} />
-
-      <View style={styles.timeBadge}>
-        <Icon name="Clock" size={12} color={colors.accent} />
-        <Text style={styles.timeText}>{item.time}</Text>
-      </View>
+      <Image
+        source={{ uri: item.poster }}
+        style={{ width: "25%", height: "100%" }}
+        contentFit="cover"
+      />
 
       <View style={styles.cardContent}>
-        <Text style={styles.animeTitle} numberOfLines={2}>
+        <Text style={styles.animeTitle} numberOfLines={3}>
           {item.title}
         </Text>
-        <View style={styles.typeBadge}>
-          <Text style={styles.typeText}>{item.type}</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeText}>{item.type}</Text>
+          </View>
+          <View style={styles.typeBadge}>
+            <Text style={styles.timeText}>{item.time}</Text>
+          </View>
         </View>
       </View>
+      <View style={styles.timelineLine} />
     </TouchableOpacity>
   );
 }
@@ -125,7 +131,11 @@ function EmptyState({ day }: { day: string }) {
   );
 }
 
-export default function ScheduleScreen({ isEmbedded }: { isEmbedded?: boolean }) {
+export default function ScheduleScreen({
+  isEmbedded,
+}: {
+  isEmbedded?: boolean;
+}) {
   const router = useRouter();
   const [scheduleData, setScheduleData] = useState<
     Record<string, ScheduleDayData>
@@ -238,9 +248,7 @@ export default function ScheduleScreen({ isEmbedded }: { isEmbedded?: boolean })
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        {Content}
-      </SafeAreaView>
+      <SafeAreaView style={styles.container}>{Content}</SafeAreaView>
     </SafeAreaProvider>
   );
 }
@@ -295,26 +303,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: 12,
     overflow: "hidden",
-    minHeight: 70,
+    minHeight: 100,
   },
   timelineLine: {
     width: 4,
     alignSelf: "stretch",
     backgroundColor: colors.accent,
   },
-  timeBadge: {
-    width: 70,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255,255,255,0.05)",
-    paddingVertical: 10,
-  },
   timeText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.text,
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textDark,
   },
   cardContent: {
     flex: 1,

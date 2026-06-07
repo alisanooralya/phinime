@@ -2,7 +2,10 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   View,
   StyleSheet,
@@ -174,9 +177,7 @@ export default function DetailAnimeScreen() {
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.title}>
-            {anime.title}
-          </Text>
+          <Text style={styles.title}>{anime.title}</Text>
 
           <View style={styles.metaRow}>
             {[
@@ -186,14 +187,16 @@ export default function DetailAnimeScreen() {
               anime?.studio,
               anime?.status,
               anime?.year,
-            ].filter(Boolean).map((m, i) => (
-              <View key={i} style={styles.metaRow}>
-                {i > 0 && (
-                  <Text style={{ color: colors.textSecondary }}>|</Text>
-                )}
-                <Text style={styles.metaText}>{m}</Text>
-              </View>
-            ))}
+            ]
+              .filter(Boolean)
+              .map((m, i) => (
+                <View key={i} style={styles.metaRow}>
+                  {i > 0 && (
+                    <Text style={{ color: colors.textSecondary }}>|</Text>
+                  )}
+                  <Text style={styles.metaText}>{m}</Text>
+                </View>
+              ))}
           </View>
 
           <View style={styles.genreRow}>
@@ -204,9 +207,7 @@ export default function DetailAnimeScreen() {
 
           <View style={styles.scoreRow}>
             <Icon name="Star" size={22} color="#FBBF24" fill="#FBBF24" />
-            <Text style={styles.scoreValue}>
-              {anime?.score || "N/A"}
-            </Text>
+            <Text style={styles.scoreValue}>{anime?.score || "N/A"}</Text>
             <Text style={styles.scoreLabel}>/ 10</Text>
           </View>
         </View>
@@ -241,7 +242,7 @@ export default function DetailAnimeScreen() {
             <View style={styles.epCountBadge}>
               <Text style={styles.epCountText}>
                 {anime?.episodes.length} Eps
-                {anime.totalEpisodes && ` / ${anime.totalEpisodes} Eps`}
+                {anime.episode && ` / ${anime.episode} Eps`}
               </Text>
             </View>
           </View>
@@ -250,6 +251,8 @@ export default function DetailAnimeScreen() {
             <EpisodeCard
               key={ep.slug}
               title={ep.title}
+              subtitle={ep.updatedAt}
+              poster={anime.poster}
               onPress={() => {
                 router.push(`/watch/${ep.slug}` as any);
               }}
@@ -469,7 +472,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: colors.accent,
-  backgroundColor: colors.accent + "22",
+    backgroundColor: colors.accent + "22",
     borderWidth: 0.8,
     borderColor: colors.accent + "55",
   },
