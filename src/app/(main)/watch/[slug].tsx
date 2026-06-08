@@ -1,4 +1,3 @@
-import { WebView } from "react-native-webview";
 import { useEffect, useState, useRef } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,17 +17,29 @@ import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import BackButton from "@/components/BackButton";
 import EpisodeCard from "@/components/EpisodeCard";
+import { Toast } from "@/components/Alert";
 import { getEpisodeDetail, type EpisodeDetailData } from "@/services/api";
+
+import { getCurrentUser } from "@/services/auth";
+import { saveWatchHistory, getEpisodeProgress } from "@/services/history";
+import { addEpisodeExp } from "@/services/exp";
+import { useToast } from "@/hooks/useAlert";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function WatchScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { state: toast, success, info, hide: hideToast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [episode, setEpisode] = useState<EpisodeDetailData | null>(null);
   const [activeMirror, setActiveMirror] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const expAwarded = useRef(false);
+  const lastSavedTime = useRef(0);
+  const initialProgress = useRef<number | null>(null);
 
   useEffect(() => {
     fetchEpisode();
@@ -42,6 +53,19 @@ export default function WatchScreen() {
       if (res.ok) {
         setEpisode(res.data);
         setActiveMirror(0);
+        expAwarded.current = false;
+        lastSavedTime.current = 0;
+
+        const user = await getCurrentUser();
+        if (user) {
+          setUserId(user.id);
+          const progress = await getEpisodeProgress(user.id, slug);
+          if (progress) {
+            initialProgress.current = progress.progress_ms;
+          } else {
+            initialProgress.current = 0;
+          }
+        }
       }
     } catch (err) {
       console.error("[WatchScreen] Error:", err);
@@ -51,16 +75,67 @@ export default function WatchScreen() {
   }
 
   const currentMirror = episode?.streamingMirrors[activeMirror];
-  const isDirectVideo =
-    currentMirror?.embedType === "direct" ||
-    currentMirror?.embedUrl.match(/\.(mp4|m3u8|webm)$|googleusercontent/);
 
-  const player = useVideoPlayer(
-    isDirectVideo ? currentMirror?.embedUrl : null,
-    (player) => {
-      player.loop = false;
-    },
-  );
+  const player = useVideoPlayer(currentMirror?.embedUrl || null, (player) => {
+    player.loop = false;
+    player.play();
+  });
+
+  useEffect(() => {
+    if (player && initialProgress.current !== null) {
+      if (initialProgress.current > 0) {
+        player.currentTime = initialProgress.current / 1000;
+      }
+      initialProgress.current = null;
+    }
+  }, [player, episode]);
+
+  useEffect(() => {
+    if (!userId || !episode || !player) return;
+
+    const interval = setInterval(async () => {
+      const currentTime = Math.floor(player.currentTime * 1000);
+      const duration = Math.floor(player.duration * 1000);
+
+      // Save history every 10 seconds or significant jump
+      if (
+        currentTime > 0 &&
+        Math.abs(currentTime - lastSavedTime.current) > 10000
+      ) {
+        lastSavedTime.current = currentTime;
+        await saveWatchHistory({
+          user_id: userId,
+          anime_id: episode.anime.slug,
+          episode_id: slug!,
+          anime_title: episode.anime.title,
+          ep_title: episode.title,
+          poster: episode.otherEpisodes.find((e) => e.slug === slug)?.poster,
+          progress_ms: currentTime,
+          duration_ms: duration,
+        });
+
+        // Check EXP (> 90% watched)
+        if (
+          !expAwarded.current &&
+          duration > 0 &&
+          currentTime / duration > 0.9
+        ) {
+          expAwarded.current = true;
+          const res = await addEpisodeExp(userId);
+          if (res?.didLevelUp) {
+            success(
+              "Level Up!",
+              `Selamat! Kamu naik ke level ${res.newLevel}`,
+            );
+          } else if (res) {
+            info("EXP Bertambah", "Lanjutkan menonton untuk naik level!");
+          }
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [userId, episode, player, slug]);
 
   if (loading) {
     return (
@@ -74,27 +149,25 @@ export default function WatchScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <Toast
+        visible={toast.visible}
+        title={toast.title}
+        message={toast.message}
+        variant={toast.variant}
+        duration={toast.duration}
+        onHide={hideToast}
+      />
       <View style={styles.header}>
         <BackButton title={`Episode ${episode.episodeNumber}`} />
       </View>
 
       <View style={styles.playerContainer}>
-        {isDirectVideo ? (
-          <VideoView
-            player={player}
-            style={styles.videoPlayer}
-            allowsFullscreen
-            allowsPictureInPicture
-          />
-        ) : (
-          <WebView
-            source={{ uri: currentMirror?.embedUrl || "" }}
-            style={styles.videoPlayer}
-            allowsFullscreenVideo
-            javaScriptEnabled
-            domStorageEnabled
-          />
-        )}
+        <VideoView
+          player={player}
+          style={styles.videoPlayer}
+          allowsFullscreen
+          allowsPictureInPicture
+        />
       </View>
 
       <ScrollView
@@ -103,7 +176,9 @@ export default function WatchScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.infoSection}>
-          <Text style={styles.episodeTitle}>Episode {episode.episodeNumber}</Text>
+          <Text style={styles.episodeTitle}>
+            Episode {episode.episodeNumber}
+          </Text>
           <Text style={styles.animeTitle}>{episode.title}</Text>
         </View>
 

@@ -104,7 +104,6 @@ export interface OtherEpisode {
   episodeNumber: number;
 }
 
-
 export interface AnimeDetailData {
   title: string;
   alternative: string;

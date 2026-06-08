@@ -24,6 +24,7 @@ import Button from "@/components/Button";
 import AnimeBatch from "@/components/AnimeBatch";
 import BackButton from "@/components/BackButton";
 import EpisodeCard from "@/components/EpisodeCard";
+import AnimeCard from "@/components/AnimeCard";
 
 import { getCurrentUser } from "@/services/auth";
 import { toggleBookmark, isBookmarked } from "@/services/bookmark";
@@ -177,17 +178,11 @@ export default function DetailAnimeScreen() {
         </View>
 
         <View style={styles.infoSection}>
+          <Text style={styles.alternative}>{anime.alternative}</Text>
           <Text style={styles.title}>{anime.title}</Text>
 
           <View style={styles.metaRow}>
-            {[
-              anime?.type,
-              anime?.duration,
-              anime?.season,
-              anime?.studio,
-              anime?.status,
-              anime?.year,
-            ]
+            {[anime?.type, anime?.status, anime?.year]
               .filter(Boolean)
               .map((m, i) => (
                 <View key={i} style={styles.metaRow}>
@@ -280,6 +275,112 @@ export default function DetailAnimeScreen() {
           )}
         </View>
 
+        {anime.batchDownloads && anime.batchDownloads.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Batch Download</Text>
+              {anime.batchDownloads.map((batch: any, i: number) => (
+                <AnimeBatch
+                  key={i}
+                  title={batch.title || `${anime.title} Batch`}
+                  batchId={batch.slug || ""}
+                />
+              ))}
+            </View>
+          </>
+        )}
+
+        <View style={styles.divider} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informasi Tambahan</Text>
+          <View style={styles.detailsGrid}>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Durasi</Text>
+              <Text style={styles.detailValue}>{anime.duration || "-"}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Musim</Text>
+              <Text style={styles.detailValue}>{anime.season || "-"}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Studio</Text>
+              <Text style={styles.detailValue}>{anime.studio || "-"}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Produser</Text>
+              <Text style={styles.detailValue}>{anime.producer || "-"}</Text>
+            </View>
+          </View>
+
+          {anime.directors && anime.directors.length > 0 && (
+            <View style={styles.listDetail}>
+              <Text style={styles.detailLabel}>Director</Text>
+              <Text style={styles.detailValue}>
+                {anime.directors.map((d) => d.name).join(", ")}
+              </Text>
+            </View>
+          )}
+
+          {anime.cast && anime.cast.length > 0 && (
+            <View style={styles.listDetail}>
+              <Text style={styles.detailLabel}>Cast</Text>
+              <View style={styles.castRow}>
+                {anime.cast.map((c, i) => (
+                  <View key={i} style={styles.badgeCast}>
+                    <Text style={styles.badgeText}>{c.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {anime.gallery && anime.gallery.length > 0 && (
+            <View style={styles.listDetail}>
+              <Text style={styles.detailLabel}>Gallery</Text>
+              <View style={styles.castRow}>
+                {anime.gallery.map((g, i) => (
+                  <View key={i} style={styles.gallery}>
+                    <Image
+                      source={{ uri: g }}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                    />
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+
+        {anime.relatedAnime && anime.relatedAnime.length > 0 && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Rekomendasi Terkait</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.relatedList}
+              >
+                {anime.relatedAnime.map((rel, i) => (
+                  <AnimeCard
+                    key={i}
+                    title={rel.title}
+                    poster={rel.poster}
+                    score={rel.score?.toString()}
+                    subTitle={rel.type}
+                    onPress={() => {
+                      router.push(`/detail/${rel.slug}` as any);
+                    }}
+                    width={120}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        )}
+
         <View style={{ marginBottom: "24%" }} />
       </Animated.ScrollView>
     </View>
@@ -356,6 +457,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     lineHeight: 28,
+  },
+  alternative: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    textAlign: "center",
   },
   metaRow: {
     flexDirection: "row",
@@ -472,52 +579,58 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: colors.accent,
-    backgroundColor: colors.accent + "22",
-    borderWidth: 0.8,
-    borderColor: colors.accent + "55",
   },
-  epCountText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.accent,
-  },
-  synopsisText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 22,
-  },
-  synopsisToggle: {
+  detailsGrid: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    alignSelf: "flex-start",
+    flexWrap: "wrap",
+    marginTop: 8,
+    gap: 10,
   },
-  synopsisToggleText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: colors.accent,
-  },
-  epActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    marginTop: 6,
-  },
-  epActionBtn: {
-    width: 172,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
+  detailItem: {
+    width: (SCREEN_WIDTH - 32 - 12) / 2,
     backgroundColor: "rgba(255,255,255,0.04)",
+    padding: 12,
     borderRadius: 12,
-    borderWidth: 0.8,
-    borderColor: "rgba(255,255,255,0.08)",
+    gap: 4,
   },
-  epActionText: {
+  detailLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.textDark,
+    textTransform: "uppercase",
+  },
+  detailValue: {
     fontSize: 13,
     fontWeight: "700",
-    color: colors.accent,
+    color: colors.textSecondary,
+  },
+  listDetail: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    padding: 12,
+    borderRadius: 12,
+    gap: 4,
+  },
+  relatedList: {
+    gap: 8,
+    marginTop: 12,
+  },
+  badgeCast: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  castRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 6,
+    gap: 6,
+  },
+  gallery: {
+    width: 108,
+    height: 150,
+    borderRadius: 12,
+    marginTop: 6,
+    overflow: "hidden",
   },
 });
