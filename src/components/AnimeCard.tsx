@@ -18,7 +18,7 @@ interface AnimeCardProps {
   eps?: string;
   score?: string;
   subTitle?: string;
-  width?: number | string;
+  width?: number;
   onPress: () => void;
   onLongPress?: () => void;
 }

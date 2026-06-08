@@ -2,10 +2,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState, useRef, useCallback } from "react";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
   StyleSheet,
@@ -21,10 +18,10 @@ import Text from "@/components/Text";
 import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
 import Button from "@/components/Button";
+import AnimeCard from "@/components/AnimeCard";
 import AnimeBatch from "@/components/AnimeBatch";
 import BackButton from "@/components/BackButton";
 import EpisodeCard from "@/components/EpisodeCard";
-import AnimeCard from "@/components/AnimeCard";
 
 import { getCurrentUser } from "@/services/auth";
 import { toggleBookmark, isBookmarked } from "@/services/bookmark";
@@ -92,7 +89,7 @@ export default function DetailAnimeScreen() {
       anime_title: anime?.title,
       poster: anime?.poster,
       status: anime?.status,
-      score: anime?.score,
+      score: anime?.score?.toString(),
     });
 
     setBookmarked(newState);
@@ -342,7 +339,7 @@ export default function DetailAnimeScreen() {
                 {anime.gallery.map((g, i) => (
                   <View key={i} style={styles.gallery}>
                     <Image
-                      source={{ uri: g }}
+                      source={{ uri: g as string }}
                       style={{ width: "100%", height: "100%" }}
                       contentFit="cover"
                     />

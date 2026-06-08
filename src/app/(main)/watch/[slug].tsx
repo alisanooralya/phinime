@@ -2,13 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Pressable,
-} from "react-native";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -17,15 +11,13 @@ import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import BackButton from "@/components/BackButton";
 import EpisodeCard from "@/components/EpisodeCard";
-import { Toast } from "@/components/Alert";
-import { getEpisodeDetail, type EpisodeDetailData } from "@/services/api";
 
+import { Toast } from "@/components/Alert";
+import { useToast } from "@/hooks/useAlert";
+import { addEpisodeExp } from "@/services/exp";
 import { getCurrentUser } from "@/services/auth";
 import { saveWatchHistory, getEpisodeProgress } from "@/services/history";
-import { addEpisodeExp } from "@/services/exp";
-import { useToast } from "@/hooks/useAlert";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import { getEpisodeDetail, type EpisodeDetailData } from "@/services/api";
 
 export default function WatchScreen() {
   const router = useRouter();
@@ -97,7 +89,6 @@ export default function WatchScreen() {
       const currentTime = Math.floor(player.currentTime * 1000);
       const duration = Math.floor(player.duration * 1000);
 
-      // Save history every 10 seconds or significant jump
       if (
         currentTime > 0 &&
         Math.abs(currentTime - lastSavedTime.current) > 10000
@@ -105,16 +96,15 @@ export default function WatchScreen() {
         lastSavedTime.current = currentTime;
         await saveWatchHistory({
           user_id: userId,
-          anime_id: episode.anime.slug,
+          anime_id: episode.slug,
           episode_id: slug!,
-          anime_title: episode.anime.title,
+          anime_title: episode.title,
           ep_title: episode.title,
           poster: episode.otherEpisodes.find((e) => e.slug === slug)?.poster,
           progress_ms: currentTime,
           duration_ms: duration,
         });
 
-        // Check EXP (> 90% watched)
         if (
           !expAwarded.current &&
           duration > 0 &&
@@ -123,10 +113,7 @@ export default function WatchScreen() {
           expAwarded.current = true;
           const res = await addEpisodeExp(userId);
           if (res?.didLevelUp) {
-            success(
-              "Level Up!",
-              `Selamat! Kamu naik ke level ${res.newLevel}`,
-            );
+            success("Level Up!", `Selamat! Kamu naik ke level ${res.newLevel}`);
           } else if (res) {
             info("EXP Bertambah", "Lanjutkan menonton untuk naik level!");
           }
@@ -165,7 +152,7 @@ export default function WatchScreen() {
         <VideoView
           player={player}
           style={styles.videoPlayer}
-          allowsFullscreen
+          fullscreenOptions={{ enable: true }}
           allowsPictureInPicture
         />
       </View>
@@ -220,11 +207,12 @@ export default function WatchScreen() {
               styles.navBtn,
               !episode.prevEpisode && styles.navBtnDisabled,
             ]}
-            onPress={() =>
-              episode.prevEpisode &&
-              router.push(`/watch/${episode.prevEpisode.slug}` as any)
+            onPress={
+              episode.prevEpisode
+                ? () =>
+                    router.push(`/watch/${episode.prevEpisode?.slug}` as any)
+                : undefined
             }
-            disabled={!episode.prevEpisode}
           >
             <Icon
               name="ChevronLeft"
@@ -247,11 +235,12 @@ export default function WatchScreen() {
               styles.navBtn,
               !episode.nextEpisode && styles.navBtnDisabled,
             ]}
-            onPress={() =>
-              episode.nextEpisode &&
-              router.push(`/watch/${episode.nextEpisode.slug}` as any)
+            onPress={
+              episode.nextEpisode
+                ? () =>
+                    router.push(`/watch/${episode.nextEpisode?.slug}` as any)
+                : undefined
             }
-            disabled={!episode.nextEpisode}
           >
             <Text
               style={[

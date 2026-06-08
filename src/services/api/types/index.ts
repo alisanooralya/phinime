@@ -98,7 +98,7 @@ export interface PopularAnimeData {
 
 // ─── Anime Detail ────────────────────────────────────────────
 
-export interface OtherEpisode {
+export interface EpisodeRef {
   title: string;
   slug: string;
   episodeNumber: number;
