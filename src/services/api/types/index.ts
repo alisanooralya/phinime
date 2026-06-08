@@ -98,12 +98,6 @@ export interface PopularAnimeData {
 
 // ─── Anime Detail ────────────────────────────────────────────
 
-export interface EpisodeRef {
-  title: string;
-  slug: string;
-  episodeNumber: number;
-}
-
 export interface AnimeDetailData {
   title: string;
   alternative: string;
@@ -123,7 +117,7 @@ export interface AnimeDetailData {
   genres: SlugName[];
   directors: SlugName[];
   cast: SlugName[];
-  episodes: EpisodeRef[];
+  episodes: OtherEpisode[];
   batchDownloads: unknown[];
   relatedAnime: {
     title: string;

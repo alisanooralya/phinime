@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   countBadge: {
-    backgroundColor: colors.accentDark,
+    backgroundColor: colors.accentDark + "55",
     alignSelf: "flex-start",
     paddingHorizontal: 6,
     paddingVertical: 2,

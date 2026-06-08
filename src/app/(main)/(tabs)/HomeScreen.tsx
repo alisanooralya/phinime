@@ -20,7 +20,6 @@ import AnimeCompleted from "@/components/home/AnimeCompleted";
 
 import {
   getPopularAnime,
-  getOngoingAnime,
   getRecentAnime,
   getAnimeList,
   type PopularAnimeItem,

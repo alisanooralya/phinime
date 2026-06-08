@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   activeCard: {
-    backgroundColor: colors.accentDark,
+    backgroundColor: colors.accentDark + "55",
   },
   iconBox: {
     width: 36,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   activeIconBox: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentDark,
   },
   categoryTitle: {
     fontSize: 13,

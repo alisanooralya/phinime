@@ -99,8 +99,8 @@ export default function WatchScreen() {
           anime_id: episode.slug,
           episode_id: slug!,
           anime_title: episode.title,
-          ep_title: episode.title,
-          poster: episode.otherEpisodes.find((e) => e.slug === slug)?.poster,
+          ep_title: `Episode ${episode.episodeNumber}`,
+          poster: episode.otherEpisodes.find((e) => e.slug == slug)?.poster,
           progress_ms: currentTime,
           duration_ms: duration,
         });

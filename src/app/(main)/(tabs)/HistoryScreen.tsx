@@ -158,7 +158,6 @@ export default function HistoryScreen({
     { title: string; data: WatchHistory[][] }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     initUser();
@@ -167,7 +166,6 @@ export default function HistoryScreen({
   async function initUser() {
     const { data } = await supabase.auth.getUser();
     const uid = data.user?.id ?? null;
-    setUserId(uid);
 
     if (uid) await fetchHistory(uid);
     setLoading(false);

@@ -26,11 +26,9 @@ import {
   Bookmark,
 } from "@/services/bookmark";
 
-const { width: SCREEN_WIDTH, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 const PADDING = 16;
 const GAP = 8;
-const CARD_WIDTH = (SCREEN_WIDTH - PADDING * 2 - GAP * 2) / 3;
-const CARD_HEIGHT = CARD_WIDTH * 1.5;
 
 interface CardProps {
   item: Bookmark;

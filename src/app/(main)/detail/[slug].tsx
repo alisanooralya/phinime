@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 99,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: colors.secondary,
   },
   badgeText: {
     fontSize: 12,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 0.8,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: colors.secondary,
     marginHorizontal: 16,
     marginVertical: 14,
   },
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   },
   detailItem: {
     width: (SCREEN_WIDTH - 32 - 12) / 2,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: colors.secondary,
     padding: 12,
     borderRadius: 12,
     gap: 4,
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   listDetail: {
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: colors.secondary,
     padding: 12,
     borderRadius: 12,
     gap: 4,
