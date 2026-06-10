@@ -1,8 +1,15 @@
+import { useVideoPlayer } from "expo-video";
 import { useEffect, useState, useRef } from "react";
-import { useVideoPlayer, VideoView } from "expo-video";
+import * as ScreenOrientation from "expo-screen-orientation";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -10,6 +17,7 @@ import colors from "@/constants/colors";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import BackButton from "@/components/BackButton";
+import VideoPlayer from "@/components/VideoPlayer";
 import EpisodeCard from "@/components/EpisodeCard";
 
 import { Toast } from "@/components/Alert";
@@ -28,6 +36,7 @@ export default function WatchScreen() {
   const [episode, setEpisode] = useState<EpisodeDetailData | null>(null);
   const [activeMirror, setActiveMirror] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const expAwarded = useRef(false);
   const lastSavedTime = useRef(0);
@@ -37,10 +46,22 @@ export default function WatchScreen() {
     fetchEpisode();
   }, [slug]);
 
+  useEffect(() => {
+    return () => {
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT_UP,
+      ).catch((err) =>
+        console.error("[WatchScreen] Failed to reset orientation:", err),
+      );
+    };
+  }, []);
+
   async function fetchEpisode() {
     if (!slug) return;
     try {
       setLoading(true);
+      if (player) player.pause();
+
       const res = await getEpisodeDetail(slug);
       if (res.ok) {
         setEpisode(res.data);
@@ -67,20 +88,51 @@ export default function WatchScreen() {
   }
 
   const currentMirror = episode?.streamingMirrors[activeMirror];
-
   const player = useVideoPlayer(currentMirror?.embedUrl || null, (player) => {
     player.loop = false;
-    player.play();
   });
 
   useEffect(() => {
-    if (player && initialProgress.current !== null) {
+    if (!player) return;
+
+    const performSeek = (timeMs: number) => {
+      const timeSec = timeMs / 1000;
+      player.currentTime = timeSec;
+      player.play();
+
+      setTimeout(() => {
+        if (Math.abs(player.currentTime - timeSec) > 1) {
+          player.currentTime = timeSec;
+          player.play();
+        }
+      }, 500);
+    };
+
+    if (player.status === "readyToPlay" && initialProgress.current !== null) {
       if (initialProgress.current > 0) {
-        player.currentTime = initialProgress.current / 1000;
+        performSeek(initialProgress.current);
+      } else {
+        player.play();
       }
       initialProgress.current = null;
     }
-  }, [player, episode]);
+
+    const subscription = player.addListener("statusChange", (event) => {
+      const status = typeof event === "object" ? event.status : event;
+
+      if (status === "readyToPlay" && initialProgress.current !== null) {
+        if (initialProgress.current > 0) {
+          performSeek(initialProgress.current);
+        } else {
+          player.play();
+        }
+        initialProgress.current = null;
+      }
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
 
   useEffect(() => {
     if (!userId || !episode || !player) return;
@@ -124,7 +176,7 @@ export default function WatchScreen() {
     return () => clearInterval(interval);
   }, [userId, episode, player, slug]);
 
-  if (loading) {
+  if (loading && !episode) {
     return (
       <View style={styles.center}>
         <Loader visible={loading} />
@@ -135,7 +187,8 @@ export default function WatchScreen() {
   if (!episode) return null;
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <Stack.Screen options={{ animation: "none" }} />
       <Toast
         visible={toast.visible}
         title={toast.title}
@@ -148,12 +201,18 @@ export default function WatchScreen() {
         <BackButton title={`Episode ${episode.episodeNumber}`} />
       </View>
 
-      <View style={styles.playerContainer}>
-        <VideoView
+      <View
+        style={[
+          styles.playerContainer,
+          isFullscreen && styles.playerContainerFullscreen,
+        ]}
+      >
+        <VideoPlayer
           player={player}
-          style={styles.videoPlayer}
-          fullscreenOptions={{ enable: true }}
-          allowsPictureInPicture
+          title={episode.title}
+          episode={`Eps ${episode.episodeNumber}`}
+          loading={loading}
+          onFullscreenChange={setIsFullscreen}
         />
       </View>
 
@@ -209,8 +268,7 @@ export default function WatchScreen() {
             ]}
             onPress={
               episode.prevEpisode
-                ? () =>
-                    router.push(`/watch/${episode.prevEpisode?.slug}` as any)
+                ? () => router.setParams({ slug: episode.prevEpisode?.slug })
                 : undefined
             }
           >
@@ -237,8 +295,7 @@ export default function WatchScreen() {
             ]}
             onPress={
               episode.nextEpisode
-                ? () =>
-                    router.push(`/watch/${episode.nextEpisode?.slug}` as any)
+                ? () => router.setParams({ slug: episode.nextEpisode?.slug })
                 : undefined
             }
           >
@@ -269,7 +326,7 @@ export default function WatchScreen() {
           </View>
         </View>
 
-        <View style={styles.episodeGrid}>
+        <View style={styles.section}>
           {episode.otherEpisodes.map((ep) => (
             <EpisodeCard
               key={ep.slug}
@@ -278,7 +335,7 @@ export default function WatchScreen() {
               poster={ep.poster}
               onPress={() => {
                 if (ep.slug !== slug) {
-                  router.push(`/watch/${ep.slug}` as any);
+                  router.setParams({ slug: ep.slug });
                 }
               }}
             />
@@ -311,9 +368,14 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     backgroundColor: "#000",
   },
-  videoPlayer: {
-    flex: 1,
-    backgroundColor: "#000",
+  playerContainerFullscreen: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    aspectRatio: undefined,
+    zIndex: 998,
   },
   content: {
     flex: 1,
@@ -403,6 +465,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
   },
+  section: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
@@ -418,9 +484,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: colors.textDark,
-  },
-  episodeGrid: {
-    paddingHorizontal: 16,
-    gap: 10,
   },
 });

@@ -248,7 +248,9 @@ export default function ScheduleScreen({
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>{Content}</SafeAreaView>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        {Content}
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

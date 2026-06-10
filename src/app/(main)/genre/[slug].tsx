@@ -101,7 +101,7 @@ export default function GenreDetailScreen() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.container}>
           <View style={styles.header}>
             <BackButton title={genreTitle || "Loading..."} />

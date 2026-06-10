@@ -3,7 +3,7 @@
     "name": "phinime",
     "slug": "phinime",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "phinime",
@@ -13,7 +13,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1A1A29"
+      "backgroundColor": "#111111"
     },
     "android": {
       "predictiveBackGestureEnabled": false,
@@ -22,6 +22,7 @@
     "plugins": [
       "expo-router",
       "expo-font",
+      "expo-screen-orientation",
       "@react-native-google-signin/google-signin",
       [
         "expo-video",
@@ -30,7 +31,15 @@
           "supportsPictureInPicture": true
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "abiFilters": ["arm64-v8a"]
+          }
+        }
+      ]
     ],
     "ios": {
       "bundleIdentifier": "com.phinime"

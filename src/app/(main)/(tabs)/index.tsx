@@ -85,7 +85,7 @@ export default function Index() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <SafeAreaView style={styles.safeAreaView}>
+        <SafeAreaView style={styles.safeAreaView} edges={["top"]}>
           <StatusBar style="light" />
           <View style={styles.container}>
             <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>

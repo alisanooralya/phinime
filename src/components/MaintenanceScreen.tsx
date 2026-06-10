@@ -16,7 +16,7 @@ export default function MaintenanceScreen({ onRetry }: MaintenanceScreenProps) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
         <View style={styles.iconWrapper}>
           <Icon name="ServerCrash" size={80} color={colors.text} />
