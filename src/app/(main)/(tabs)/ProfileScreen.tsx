@@ -307,7 +307,7 @@ export default function ProfileScreen() {
             <MenuItem
               icon="Play"
               label="Pemutaran"
-              onPress={() => handleFeatureNotAvailable("Pemutaran")}
+              onPress={() => router.push("/(main)/settings/playback")}
             />
             <View style={styles.menuDivider} />
             <MenuItem

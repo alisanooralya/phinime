@@ -23,24 +23,14 @@ export default function MenuItem({
       activeOpacity={0.7}
       onPress={onPress}
     >
-      <View
-        style={[
-          styles.menuIcon,
-          danger && styles.menuIconDanger,
-        ]}
-      >
+      <View style={[styles.menuIcon, danger && styles.menuIconDanger]}>
         <Icon
           name={icon as any}
           size={18}
           color={danger ? "#F87171" : colors.text}
         />
       </View>
-      <Text
-        style={[
-          styles.menuLabel,
-          danger && styles.menuLabelDanger,
-        ]}
-      >
+      <Text style={[styles.menuLabel, danger && styles.menuLabelDanger]}>
         {label}
       </Text>
       <Icon
