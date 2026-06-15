@@ -2,7 +2,7 @@
   "expo": {
     "name": "phinime",
     "slug": "phinime",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -32,14 +32,7 @@
         }
       ],
       "expo-image",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "abiFilters": ["arm64-v8a"]
-          }
-        }
-      ]
+      "expo-build-properties"
     ],
     "ios": {
       "bundleIdentifier": "com.phinime"

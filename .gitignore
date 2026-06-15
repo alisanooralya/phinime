@@ -43,6 +43,3 @@ yarn-error.*
 
 # eas
 credentials.json
-
-# example
-!.env.example
