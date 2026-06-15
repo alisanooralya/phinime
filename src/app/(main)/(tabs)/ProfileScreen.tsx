@@ -17,6 +17,8 @@ import Loader from "@/components/Loader";
 import Header from "@/components/Header";
 import ExpCard from "@/components/ExpCard";
 import RankAvatarBorder from "@/components/RankAvatarBorder";
+import StatCard from "@/components/profile/StatCard";
+import MenuItem from "@/components/profile/MenuItem";
 
 import { supabase } from "@/lib/supabase";
 import { getBookmarks } from "@/services/bookmark";
@@ -37,14 +39,6 @@ interface Stats {
   completed: number;
 }
 
-interface MenuItemProps {
-  icon: string;
-  label: string;
-  onPress: () => void;
-  danger?: boolean;
-  secret?: boolean;
-}
-
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -52,53 +46,6 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-}
-
-function StatCard({ value, label }: { value: number; label: string }) {
-  return (
-    <View style={styles.statCard}>
-      <Text style={styles.statNum}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function MenuItem({ icon, label, onPress, danger, secret }: MenuItemProps) {
-  return (
-    <TouchableOpacity
-      style={styles.menuItem}
-      activeOpacity={0.7}
-      onPress={onPress}
-    >
-      <View
-        style={[
-          styles.menuIcon,
-          danger && styles.menuIconDanger,
-          secret && styles.menuIconSecret,
-        ]}
-      >
-        <Icon
-          name={icon as any}
-          size={18}
-          color={secret ? "#FFD700" : danger ? "#F87171" : colors.text}
-        />
-      </View>
-      <Text
-        style={[
-          styles.menuLabel,
-          danger && styles.menuLabelDanger,
-          secret && styles.menuLabelSecret,
-        ]}
-      >
-        {label}
-      </Text>
-      <Icon
-        name="ChevronRight"
-        size={14}
-        color={secret ? "#FFD700" : danger ? "#F87171" : colors.textDark}
-      />
-    </TouchableOpacity>
-  );
 }
 
 export default function ProfileScreen() {
@@ -122,7 +69,12 @@ export default function ProfileScreen() {
     show: showDialog,
     hide: hideAlert,
   } = useAlertDialog();
-  const { state: toastState, error: toastError, hide: hideToast } = useToast();
+  const {
+    state: toastState,
+    info: toastInfo,
+    error: toastError,
+    hide: hideToast,
+  } = useToast();
 
   useEffect(() => {
     fetchAll();
@@ -136,8 +88,14 @@ export default function ProfileScreen() {
 
       const uid = user.id;
       const email = user.email ?? "";
-      const name = user.user_metadata?.full_name ?? email.split("@")[0];
-      const avatarUrl = user.user_metadata?.avatar_url ?? null;
+      const name =
+        user.user_metadata?.custom_name ??
+        user.user_metadata?.full_name ??
+        email.split("@")[0];
+      const avatarUrl =
+        user.user_metadata?.custom_avatar_url ??
+        user.user_metadata?.avatar_url ??
+        null;
 
       setProfile({ name, email, avatarUrl });
 
@@ -194,7 +152,22 @@ export default function ProfileScreen() {
       if (!uid) return;
 
       const ext = uri.split(".").pop() ?? "jpg";
-      const path = `avatars/${uid}.${ext}`;
+      const timestamp = Date.now();
+      const path = `avatars/${uid}_${timestamp}.${ext}`;
+
+      const oldUrl = profile?.avatarUrl;
+      if (oldUrl && oldUrl.includes("avatars/")) {
+        const parts = oldUrl.split("avatars/");
+        if (parts.length > 1) {
+          const oldPath = `avatars/${parts[1].split("?")[0]}`;
+          supabase.storage
+            .from("profiles")
+            .remove([oldPath])
+            .catch((err) => {
+              console.warn("[Profile] Gagal hapus avatar lama:", err);
+            });
+        }
+      }
 
       const response = await fetch(uri);
       const arrayBuffer = await response.arrayBuffer();
@@ -218,7 +191,10 @@ export default function ProfileScreen() {
       const publicUrl = urlData.publicUrl;
 
       await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl },
+        data: {
+          avatar_url: publicUrl,
+          custom_avatar_url: publicUrl,
+        },
       });
 
       setProfile((prev) => (prev ? { ...prev, avatarUrl: publicUrl } : prev));
@@ -232,19 +208,40 @@ export default function ProfileScreen() {
 
   const handleSignOut = useCallback(() => {
     confirm(
-      "Sign Out",
+      "Keluar",
       "Yakin ingin keluar?",
       async () => {
         await supabase.auth.signOut();
         router.replace("/(auth)/onboarding");
       },
-      { variant: "warning", confirmText: "Sign Out" },
+      { variant: "error", confirmText: "Keluar" },
     );
   }, [router, confirm]);
 
-  const handleSettings = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  const handleFeatureNotAvailable = useCallback(
+    (featureName: string) => {
+      toastInfo("Segera Hadir", `Fitur ${featureName} akan segera hadir.`);
+    },
+    [toastInfo],
+  );
+
+  const handleDeleteAccount = useCallback(() => {
+    confirm(
+      "Hapus Akun",
+      "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Seluruh riwayat dan data Anda akan hilang selamanya.",
+      async () => {
+        showDialog({
+          variant: "error",
+          title: "Hapus Akun Gagal",
+          message:
+            "Menghapus akun saat ini tidak dapat dilakukan dari aplikasi karena kebijakan keamanan. Silakan hubungi admin.",
+          confirmText: "Tutup",
+          onConfirm: hideAlert,
+        });
+      },
+      { variant: "error", confirmText: "Hapus Permanen" },
+    );
+  }, [confirm, showDialog, hideAlert]);
 
   if (loading) {
     return (
@@ -308,15 +305,41 @@ export default function ProfileScreen() {
           <Text style={styles.menuSectionTitle}>PENGATURAN</Text>
           <View style={styles.menuCard}>
             <MenuItem
-              icon="Settings"
-              label="Pengaturan"
-              onPress={handleSettings}
+              icon="Play"
+              label="Pemutaran"
+              onPress={() => handleFeatureNotAvailable("Pemutaran")}
             />
             <View style={styles.menuDivider} />
             <MenuItem
+              icon="Monitor"
+              label="Kualitas"
+              onPress={() => handleFeatureNotAvailable("Kualitas")}
+            />
+            <View style={styles.menuDivider} />
+            <MenuItem
+              icon="Bell"
+              label="Notifikasi"
+              onPress={() => handleFeatureNotAvailable("Notifikasi")}
+            />
+          </View>
+        </View>
+
+        <View style={styles.menuSection}>
+          <Text style={[styles.menuSectionTitle, styles.dangerSectionTitle]}>
+            ZONA BERBAHAYA
+          </Text>
+          <View style={[styles.menuCard, styles.dangerMenuCard]}>
+            <MenuItem
               icon="LogOut"
-              label="Sign Out"
+              label="Keluar"
               onPress={handleSignOut}
+              danger
+            />
+            <View style={styles.menuDivider} />
+            <MenuItem
+              icon="UserX"
+              label="Hapus Akun"
+              onPress={handleDeleteAccount}
               danger
             />
           </View>
@@ -386,21 +409,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 10,
   },
-  statCard: {
-    flex: 1,
-    alignItems: "center",
-  },
-  statNum: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: colors.accent,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: colors.textDark,
-    marginTop: 3,
-    fontWeight: "500",
-  },
   statDivider: {
     width: 0.5,
     backgroundColor: "rgba(255,255,255,0.1)",
@@ -424,45 +432,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
   },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    gap: 12,
-  },
   menuDivider: {
     height: 0.5,
     backgroundColor: "rgba(255,255,255,0.07)",
     marginHorizontal: 14,
   },
-  menuIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.07)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  menuIconDanger: {
-    backgroundColor: "rgba(248,113,113,0.12)",
-  },
-  menuIconSecret: {
-    backgroundColor: "rgba(255,215,0,0.12)",
-  },
-  menuLabel: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  menuLabelDanger: {
-    color: "#F87171",
-  },
-  menuLabelSecret: {
-    color: "#FFD700",
-  },
   padding: {
     marginBottom: "24%",
+  },
+  dangerSectionTitle: {
+    color: "#F87171",
+  },
+  dangerMenuCard: {
+    borderColor: "rgba(248, 113, 113, 0.15)",
+    borderWidth: 1,
   },
 });

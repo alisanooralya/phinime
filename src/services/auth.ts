@@ -40,8 +40,14 @@ export async function signInWithGoogle(): Promise<AuthResult> {
       user: {
         id: user?.id ?? "",
         email: user?.email ?? "",
-        name: user?.user_metadata?.full_name ?? "",
-        avatar: user?.user_metadata?.avatar_url ?? "",
+        name:
+          user?.user_metadata?.custom_name ??
+          user?.user_metadata?.full_name ??
+          "",
+        avatar:
+          user?.user_metadata?.custom_avatar_url ??
+          user?.user_metadata?.avatar_url ??
+          "",
       },
     };
   } catch (error: any) {
@@ -74,8 +80,15 @@ export async function getCurrentUser() {
   return {
     id: user.id,
     email: user.email ?? "",
-    name: user.user_metadata?.full_name ?? user.user_metadata?.user_name ?? "",
-    avatar: user.user_metadata?.avatar_url ?? "",
+    name:
+      user.user_metadata?.custom_name ??
+      user.user_metadata?.full_name ??
+      user.user_metadata?.user_name ??
+      "",
+    avatar:
+      user.user_metadata?.custom_avatar_url ??
+      user.user_metadata?.avatar_url ??
+      "",
     provider: user.app_metadata?.provider ?? "unknown",
   };
 }

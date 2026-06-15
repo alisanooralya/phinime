@@ -28,8 +28,14 @@ export default function UserProfileHome() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       setUser({
-        name: user.user_metadata?.full_name ?? "User",
-        avatar: user.user_metadata?.avatar_url ?? "",
+        name:
+          user.user_metadata?.custom_name ??
+          user.user_metadata?.full_name ??
+          "User",
+        avatar:
+          user.user_metadata?.custom_avatar_url ??
+          user.user_metadata?.avatar_url ??
+          "",
         email: user.email ?? "",
       });
     });
