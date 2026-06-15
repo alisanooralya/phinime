@@ -55,7 +55,7 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <Text style={styles.logo}>PhiNime</Text>
+      <Text style={styles.logo}>phinime</Text>
       <Text style={styles.tagline}>Dunia lain menantimu</Text>
 
       <View style={styles.bottom}>

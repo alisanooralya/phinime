@@ -12,7 +12,6 @@ interface AnimeBatchProps {
 
 export default function AnimeBatch({ title, batchId }: AnimeBatchProps) {
   const handleDownload = () => {
-    // Navigate or trigger download logic
     console.log("Download batch:", batchId);
   };
 

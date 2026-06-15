@@ -22,7 +22,6 @@ const { width } = Dimensions.get("window");
 interface CustomVideoPlayerProps {
   player: ExpoVideoPlayer;
   title?: string;
-  episode?: string;
   loading?: boolean;
   onFullscreenToggle?: () => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
@@ -37,7 +36,6 @@ function formatTime(seconds: number): string {
 export default function VideoPlayer({
   player,
   title,
-  episode,
   loading,
   onFullscreenToggle,
   onFullscreenChange,
@@ -53,7 +51,6 @@ export default function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync ref with state
   useEffect(() => {
     isSeekingRef.current = isSeeking;
   }, [isSeeking]);
@@ -112,7 +109,9 @@ export default function VideoPlayer({
         }
 
         const dur =
-          (typeof event === "object" ? event.duration : null) ??
+          (typeof event === "object" && "duration" in event
+            ? (event as any).duration
+            : null) ??
           player.duration ??
           0;
         if (dur > 0) {
@@ -129,7 +128,6 @@ export default function VideoPlayer({
       }
     });
 
-    // Fallback interval for UI updates
     const interval = setInterval(() => {
       if (player.playing && !isSeekingRef.current) {
         setCurrentTime(player.currentTime);
@@ -137,7 +135,6 @@ export default function VideoPlayer({
       }
     }, 500);
 
-    // Initial check
     if (player.duration > 0) {
       setDuration(player.duration);
     }

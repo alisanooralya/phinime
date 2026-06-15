@@ -3,13 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -210,7 +204,6 @@ export default function WatchScreen() {
         <VideoPlayer
           player={player}
           title={episode.title}
-          episode={`Eps ${episode.episodeNumber}`}
           loading={loading}
           onFullscreenChange={setIsFullscreen}
         />

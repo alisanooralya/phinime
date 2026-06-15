@@ -1,5 +1,5 @@
-import { View, StyleSheet } from "react-native";
 import { useState, useEffect, memo } from "react";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -25,7 +25,15 @@ const PreservedMovie = memo(MovieList);
 const PreservedSchedule = memo(ScheduleList);
 
 export default function ListScreen({ initialParams }: { initialParams?: any }) {
+  const { width: screenWidth } = useWindowDimensions();
   const [activeType, setActiveType] = useState<string>("ongoing");
+
+  const paddingHorizontal = 32;
+  const gap = 10;
+  const buttonsPerRow = 2;
+  const dynamicButtonWidth =
+    (screenWidth - paddingHorizontal - gap * (buttonsPerRow - 1)) /
+    buttonsPerRow;
 
   useEffect(() => {
     if (initialParams?.initialType) {
@@ -81,6 +89,7 @@ export default function ListScreen({ initialParams }: { initialParams?: any }) {
               key={item.type}
               button={[
                 styles.categoryCard,
+                { width: dynamicButtonWidth },
                 activeType === item.type && styles.activeCard,
               ]}
               onPress={() => setActiveType(item.type)}
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
   categoryWrapper: {
     marginTop: 64,
     marginBottom: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   gridContainer: {
     flexWrap: "wrap",
@@ -132,7 +141,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   categoryCard: {
-    width: 179.3,
     backgroundColor: colors.secondary,
     borderRadius: 16,
     padding: 8,

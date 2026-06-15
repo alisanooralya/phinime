@@ -31,21 +31,15 @@ const LAST_BTN_WIDTH = 140;
 const { width, height } = Dimensions.get("window");
 
 const Dot = memo(({ active }: { active: boolean }) => {
-  const widthAnim = useRef(new Animated.Value(active ? 22 : 8)).current;
   const opacityAnim = useRef(new Animated.Value(active ? 1 : 0.3)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(widthAnim, {
-        toValue: active ? 22 : 8,
-        useNativeDriver: false,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: active ? 1 : 0.3,
-        duration: 150,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    Animated.timing(opacityAnim, {
+      toValue: active ? 1 : 0.3,
+      duration: 250,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
+    }).start();
   }, [active]);
 
   return (
@@ -53,7 +47,6 @@ const Dot = memo(({ active }: { active: boolean }) => {
       style={[
         styles.dot,
         {
-          width: widthAnim,
           opacity: opacityAnim,
           backgroundColor: active ? colors.accent : "rgba(255,255,255,0.4)",
         },
@@ -157,15 +150,41 @@ export default function OnboardingScreen() {
   useEffect(() => {
     if (isLast) {
       Animated.parallel([
-        Animated.timing(arrowOpacity, { toValue: 0, duration: 100, useNativeDriver: false }),
-        Animated.spring(btnWidth, { toValue: LAST_BTN_WIDTH, useNativeDriver: false, friction: 8, tension: 40 }),
-        Animated.timing(textOpacity, { toValue: 1, duration: 250, useNativeDriver: false }),
+        Animated.timing(arrowOpacity, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+        Animated.spring(btnWidth, {
+          toValue: LAST_BTN_WIDTH,
+          useNativeDriver: false,
+          friction: 8,
+          tension: 40,
+        }),
+        Animated.timing(textOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: false,
+        }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(textOpacity, { toValue: 0, duration: 100, useNativeDriver: false }),
-        Animated.spring(btnWidth, { toValue: ARROW_BTN_SIZE, useNativeDriver: false, friction: 8, tension: 40 }),
-        Animated.timing(arrowOpacity, { toValue: 1, duration: 250, useNativeDriver: false }),
+        Animated.timing(textOpacity, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+        Animated.spring(btnWidth, {
+          toValue: ARROW_BTN_SIZE,
+          useNativeDriver: false,
+          friction: 8,
+          tension: 40,
+        }),
+        Animated.timing(arrowOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: false,
+        }),
       ]).start();
     }
   }, [isLast]);
@@ -325,7 +344,11 @@ export default function OnboardingScreen() {
                   <Animated.View
                     style={{ opacity: arrowOpacity, position: "absolute" }}
                   >
-                    <Icon name="ArrowRight" color={colors.background} size={24} />
+                    <Icon
+                      name="ArrowRight"
+                      color={colors.background}
+                      size={24}
+                    />
                   </Animated.View>
                   <Animated.View style={{ opacity: textOpacity }}>
                     <Text style={styles.startText}>Login</Text>
@@ -349,7 +372,6 @@ export default function OnboardingScreen() {
       >
         <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
           <View style={styles.loginContainer}>
-
             <View style={styles.loginBranding}>
               <View style={styles.loginLogoBox}>
                 <Image
@@ -368,10 +390,7 @@ export default function OnboardingScreen() {
                 Masuk untuk melanjutkan perjalananmu
               </Text>
 
-              <Button
-                button={styles.googleButton}
-                onPress={handleGoogle}
-              >
+              <Button button={styles.googleButton} onPress={handleGoogle}>
                 <Image
                   source={require("@/assets/images/GoogleIcon.png")}
                   style={styles.googleIcon}
@@ -392,11 +411,13 @@ export default function OnboardingScreen() {
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.backBtn} onPress={goBackToOnboarding}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={goBackToOnboarding}
+            >
               <Icon name="ChevronLeft" size={16} color={colors.textDark} />
               <Text style={styles.backText}>Kembali</Text>
             </TouchableOpacity>
-
           </View>
 
           {loginLoading && (
