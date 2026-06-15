@@ -197,13 +197,19 @@ export default function ProfileScreen() {
       const path = `avatars/${uid}.${ext}`;
 
       const response = await fetch(uri);
-      const blob = await response.blob();
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = new Uint8Array(arrayBuffer);
+      const normalizedExt = ext === "jpg" ? "jpeg" : ext;
+      const contentType = `image/${normalizedExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("profiles")
-        .upload(path, blob, { upsert: true, contentType: `image/${ext}` });
+        .upload(path, buffer, { upsert: true, contentType });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("[Profile] uploadError:", uploadError);
+        throw uploadError;
+      }
 
       const { data: urlData } = supabase.storage
         .from("profiles")
