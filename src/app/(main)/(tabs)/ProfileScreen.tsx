@@ -16,9 +16,9 @@ import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
 import ExpCard from "@/components/ExpCard";
-import RankAvatarBorder from "@/components/RankAvatarBorder";
 import StatCard from "@/components/profile/StatCard";
 import MenuItem from "@/components/profile/MenuItem";
+import RankAvatarBorder from "@/components/RankAvatarBorder";
 
 import { supabase } from "@/lib/supabase";
 import { getBookmarks } from "@/services/bookmark";
