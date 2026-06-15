@@ -41,7 +41,7 @@ export default function UserProfileHome() {
       "Yakin ingin keluar?",
       async () => {
         await signOut();
-        router.replace("/(auth)/login");
+        router.replace("/(auth)/onboarding");
       },
       { variant: "warning", confirmText: "Sign Out" },
     );

@@ -35,7 +35,7 @@ export default function WelcomeScreen() {
         if (!hasOnboarded) {
           router.replace("/onboarding");
         } else if (!user) {
-          router.replace("/login");
+          router.replace("/onboarding");
         } else {
           router.replace("/(main)/(tabs)");
         }

@@ -230,7 +230,7 @@ export default function ProfileScreen() {
       "Yakin ingin keluar?",
       async () => {
         await supabase.auth.signOut();
-        router.replace("/(auth)/login");
+        router.replace("/(auth)/onboarding");
       },
       { variant: "warning", confirmText: "Sign Out" },
     );
