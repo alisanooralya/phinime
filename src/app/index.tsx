@@ -21,18 +21,18 @@ export default function WelcomeScreen() {
     const check = async () => {
       try {
         const [
-          hasOnboarded,
+          isLoggedIn,
           {
             data: { user },
           },
         ] = await Promise.all([
-          AsyncStorage.getItem("hasOnboarded"),
+          AsyncStorage.getItem("isLoggedIn"),
           supabase.auth.getUser(),
         ]);
 
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
-        if (!hasOnboarded) {
+        if (!isLoggedIn) {
           router.replace("/onboarding");
         } else if (!user) {
           router.replace("/onboarding");

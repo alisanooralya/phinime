@@ -20,6 +20,7 @@ import Icon from "@/components/Icon";
 import colors from "@/constants/colors";
 import Loader from "@/components/Loader";
 import Button from "@/components/Button";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Toast } from "@/components/Alert";
 import { useToast } from "@/hooks/useAlert";
@@ -254,6 +255,10 @@ export default function OnboardingScreen() {
     setLoginLoading(false);
 
     if (result.success) {
+      try {
+        await AsyncStorage.setItem("isLoggedIn", "true");
+      } catch (err) {}
+
       success("Berhasil Login", "Selamat datang kembali!");
       setTimeout(() => {
         router.replace("/(main)/(tabs)");
@@ -478,8 +483,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   dot: {
+    width: 8,
     height: 8,
-    borderRadius: 8,
+    borderRadius: 4,
     marginHorizontal: 3,
   },
   textArea: {
