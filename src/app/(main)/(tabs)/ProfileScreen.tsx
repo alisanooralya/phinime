@@ -313,7 +313,7 @@ export default function ProfileScreen() {
             <MenuItem
               icon="Monitor"
               label="Kualitas"
-              onPress={() => handleFeatureNotAvailable("Kualitas")}
+              onPress={() => router.push("/(main)/settings/quality")}
             />
             <View style={styles.menuDivider} />
             <MenuItem

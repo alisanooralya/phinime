@@ -1,10 +1,6 @@
 import { errorBus } from "./errorBus";
 import type { ApiResponse } from "../types";
 
-/**
- * Membaca BASE_URL dari environment variable.
- * Set di file .env: BASE_URL=https://x5.sokuja.uk
- */
 export function getBaseUrl(): string {
   const url = process.env.EXPO_PUBLIC_BASE_URL;
   if (!url) {
@@ -14,19 +10,15 @@ export function getBaseUrl(): string {
         "   dan sudah di-load (dotenv.config()) sebelum memanggil API.",
     );
   }
-  return url.replace(/\/$/, ""); // hapus trailing slash
+  return url.replace(/\/$/, "");
 }
 
-/**
- * Generic fetcher — melempar error jika ok: false atau HTTP error.
- */
 export async function apiFetch<T>(
   path: string,
   params?: Record<string, string | number | undefined>,
 ): Promise<ApiResponse<T>> {
   const base = getBaseUrl();
 
-  // Susun query string (abaikan nilai undefined)
   const qs = params
     ? "?" +
       Object.entries(params)

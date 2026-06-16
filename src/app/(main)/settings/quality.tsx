@@ -1,0 +1,386 @@
+import { useEffect, useRef, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import Icon from "@/components/Icon";
+import Text from "@/components/Text";
+import colors from "@/constants/colors";
+import BackButton from "@/components/BackButton";
+
+const STORAGE_KEY = "@phinime:video_quality";
+
+type QualityOption = {
+  id: string;
+  label: string;
+  badge?: string;
+  description: string;
+  icon: string;
+  iconColor: string;
+  iconBg: string;
+};
+
+const QUALITY_OPTIONS: QualityOption[] = [
+  {
+    id: "480p",
+    label: "480p",
+    badge: "Hemat Data",
+    description:
+      "Kualitas standar. Cocok untuk koneksi lambat atau menghemat kuota internet.",
+    icon: "Wifi",
+    iconColor: "#60A5FA",
+    iconBg: "rgba(96, 165, 250, 0.12)",
+  },
+  {
+    id: "720p",
+    label: "720p",
+    badge: "Disarankan",
+    description:
+      "Kualitas HD yang seimbang antara kejernihan gambar dan penggunaan data.",
+    icon: "Monitor",
+    iconColor: "#34D399",
+    iconBg: "rgba(52, 211, 153, 0.12)",
+  },
+  {
+    id: "1080p",
+    label: "1080p",
+    badge: "Full HD",
+    description:
+      "Kualitas terbaik. Butuh koneksi stabil dan perangkat yang mendukung resolusi tinggi.",
+    icon: "Tv",
+    iconColor: colors.accent,
+    iconBg: "rgba(245, 160, 212, 0.12)",
+  },
+  {
+    id: "manual",
+    label: "Manual",
+    description:
+      "Pilih kualitas secara langsung di setiap video sebelum diputar.",
+    icon: "SlidersHorizontal",
+    iconColor: "#FBBF24",
+    iconBg: "rgba(251, 191, 36, 0.12)",
+  },
+];
+
+function QualityOptionRow({
+  option,
+  selected,
+  onSelect,
+}: {
+  option: QualityOption;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const glowOpacity = useRef(new Animated.Value(selected ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(glowOpacity, {
+      toValue: selected ? 1 : 0,
+      duration: 220,
+      useNativeDriver: false,
+    }).start();
+  }, [selected]);
+
+  const handlePressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      damping: 12,
+      stiffness: 300,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      damping: 12,
+      stiffness: 300,
+    }).start();
+    onSelect();
+  };
+
+  const borderColor = glowOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(255,255,255,0.08)", colors.accent],
+  });
+
+  const bgColor = glowOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.secondary, "rgba(245,160,212,0.06)"],
+  });
+
+  return (
+    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut}>
+      {/* Lapisan luar: animasi warna (useNativeDriver: false) */}
+      <Animated.View
+        style={[styles.optionCard, { borderColor, backgroundColor: bgColor }]}
+      >
+        {/* Lapisan dalam: animasi skala (useNativeDriver: true) */}
+        <Animated.View style={[styles.optionInner, { transform: [{ scale }] }]}>
+          {/* Icon */}
+          <View style={[styles.optionIcon, { backgroundColor: option.iconBg }]}>
+            <Icon
+              name={option.icon as any}
+              size={20}
+              color={option.iconColor}
+            />
+          </View>
+
+          {/* Label & Desc */}
+          <View style={styles.optionBody}>
+            <View style={styles.optionLabelRow}>
+              <Text style={styles.optionLabel}>{option.label}</Text>
+              {option.badge && (
+                <View style={[styles.badge, selected && styles.badgeSelected]}>
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      selected && styles.badgeTextSelected,
+                    ]}
+                  >
+                    {option.badge}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.optionDesc}>{option.description}</Text>
+          </View>
+
+          {/* Radio Indicator */}
+          <View style={[styles.radio, selected && styles.radioSelected]}>
+            {selected && <View style={styles.radioDot} />}
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+export default function QualitySettingScreen() {
+  const [selected, setSelected] = useState<string>("720p");
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then((val) => {
+      if (val) setSelected(val);
+    });
+  }, []);
+
+  const handleSelect = async (id: string) => {
+    setSelected(id);
+    await AsyncStorage.setItem(STORAGE_KEY, id);
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.header}>
+        <BackButton title="Kualitas Video" />
+      </View>
+
+      <View style={styles.banner}>
+        <View style={styles.bannerIconWrap}>
+          <Icon name="Gauge" size={28} color={colors.accent} />
+        </View>
+        <Text style={styles.bannerTitle}>Pengaturan Kualitas</Text>
+        <Text style={styles.bannerDesc}>
+          Tentukan kualitas video default saat menonton anime. Pengaturan ini
+          berlaku untuk semua episode secara otomatis.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PILIH KUALITAS DEFAULT</Text>
+        <View style={styles.optionList}>
+          {QUALITY_OPTIONS.map((opt, idx) => (
+            <QualityOptionRow
+              key={opt.id}
+              option={opt}
+              selected={selected === opt.id}
+              onSelect={() => handleSelect(opt.id)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.infoBox}>
+        <View style={styles.infoRow}>
+          <Icon name="Info" size={14} color={colors.textDark} />
+          <Text style={styles.infoText}>
+            Kualitas yang dipilih akan disimpan secara lokal di perangkat kamu.
+            Mode Manual memungkinkan kamu memilih kualitas secara langsung di
+            setiap video.
+          </Text>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+
+  // Banner
+  banner: {
+    marginHorizontal: 16,
+    marginBottom: 24,
+    backgroundColor: colors.secondary,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 0.8,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  bannerIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(245,160,212,0.12)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  bannerTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: colors.text,
+  },
+  bannerDesc: {
+    fontSize: 13,
+    color: colors.textDark,
+    textAlign: "center",
+    lineHeight: 19,
+  },
+
+  // Section
+  section: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.textDark,
+    letterSpacing: 1.2,
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  optionList: {
+    gap: 10,
+  },
+
+  // Option Card
+  optionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    gap: 12,
+  },
+  optionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  optionBody: {
+    flex: 1,
+    gap: 3,
+  },
+  optionLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  optionLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.text,
+  },
+  optionDesc: {
+    fontSize: 12,
+    color: colors.textDark,
+    lineHeight: 17,
+  },
+
+  // Badge
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 99,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  badgeSelected: {
+    backgroundColor: "rgba(245,160,212,0.18)",
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.textDark,
+    letterSpacing: 0.3,
+  },
+  badgeTextSelected: {
+    color: colors.accent,
+  },
+
+  // Radio
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radioSelected: {
+    borderColor: colors.accent,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.accent,
+  },
+
+  // Info Box
+  infoBox: {
+    marginHorizontal: 16,
+    marginTop: 4,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textDark,
+    lineHeight: 18,
+  },
+});
