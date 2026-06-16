@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Animated, TouchableOpacity, StyleSheet, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Icon from "@/components/Icon";
@@ -77,95 +71,46 @@ function QualityOptionRow({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const scale = useRef(new Animated.Value(1)).current;
-  const glowOpacity = useRef(new Animated.Value(selected ? 1 : 0)).current;
+  const dotScale = useRef(new Animated.Value(selected ? 1 : 0)).current;
 
   useEffect(() => {
-    Animated.timing(glowOpacity, {
+    Animated.spring(dotScale, {
       toValue: selected ? 1 : 0,
-      duration: 220,
-      useNativeDriver: false,
+      useNativeDriver: true,
+      friction: 8,
     }).start();
   }, [selected]);
 
-  const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.97,
-      useNativeDriver: true,
-      damping: 12,
-      stiffness: 300,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      damping: 12,
-      stiffness: 300,
-    }).start();
-    onSelect();
-  };
-
-  const borderColor = glowOpacity.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["rgba(255,255,255,0.08)", colors.accent],
-  });
-
-  const bgColor = glowOpacity.interpolate({
-    inputRange: [0, 1],
-    outputRange: [colors.secondary, "rgba(245,160,212,0.06)"],
-  });
-
   return (
-    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      {/* Lapisan luar: animasi warna (useNativeDriver: false) */}
-      <Animated.View
-        style={[styles.optionCard, { borderColor, backgroundColor: bgColor }]}
-      >
-        {/* Lapisan dalam: animasi skala (useNativeDriver: true) */}
-        <Animated.View style={[styles.optionInner, { transform: [{ scale }] }]}>
-          {/* Icon */}
+    <TouchableOpacity onPress={onSelect} activeOpacity={0.8}>
+      <View style={styles.optionCard}>
+        <View style={styles.optionInner}>
           <View style={[styles.optionIcon, { backgroundColor: option.iconBg }]}>
             <Icon
               name={option.icon as any}
-              size={20}
+              size={22}
               color={option.iconColor}
             />
           </View>
 
-          {/* Label & Desc */}
           <View style={styles.optionBody}>
-            <View style={styles.optionLabelRow}>
-              <Text style={styles.optionLabel}>{option.label}</Text>
-              {option.badge && (
-                <View style={[styles.badge, selected && styles.badgeSelected]}>
-                  <Text
-                    style={[
-                      styles.badgeText,
-                      selected && styles.badgeTextSelected,
-                    ]}
-                  >
-                    {option.badge}
-                  </Text>
-                </View>
-              )}
-            </View>
+            <Text style={styles.optionLabel}>{option.label}</Text>
             <Text style={styles.optionDesc}>{option.description}</Text>
           </View>
 
-          {/* Radio Indicator */}
           <View style={[styles.radio, selected && styles.radioSelected]}>
-            {selected && <View style={styles.radioDot} />}
+            <Animated.View
+              style={[styles.radioDot, { transform: [{ scale: dotScale }] }]}
+            />
           </View>
-        </Animated.View>
-      </Animated.View>
-    </Pressable>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 export default function QualitySettingScreen() {
-  const [selected, setSelected] = useState<string>("720p");
+  const [selected, setSelected] = useState<string>("480p");
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
@@ -232,11 +177,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-
-  // Banner
   banner: {
     marginHorizontal: 16,
     marginBottom: 24,
@@ -268,11 +208,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 19,
   },
-
-  // Section
   section: {
     marginHorizontal: 16,
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 10,
@@ -283,33 +220,30 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   optionList: {
-    gap: 10,
+    gap: 8,
   },
-
-  // Option Card
   optionCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    gap: 12,
+    backgroundColor: colors.secondary,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  optionInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
   },
   optionIcon: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   optionBody: {
     flex: 1,
-    gap: 3,
-  },
-  optionLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    gap: 2,
   },
   optionLabel: {
     fontSize: 15,
@@ -319,34 +253,11 @@ const styles = StyleSheet.create({
   optionDesc: {
     fontSize: 12,
     color: colors.textDark,
-    lineHeight: 17,
   },
-
-  // Badge
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 99,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  badgeSelected: {
-    backgroundColor: "rgba(245,160,212,0.18)",
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: colors.textDark,
-    letterSpacing: 0.3,
-  },
-  badgeTextSelected: {
-    color: colors.accent,
-  },
-
-  // Radio
   radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
@@ -361,11 +272,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: colors.accent,
   },
-
-  // Info Box
   infoBox: {
     marginHorizontal: 16,
-    marginTop: 4,
+    marginTop: 18,
   },
   infoRow: {
     flexDirection: "row",
