@@ -4,6 +4,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -32,6 +33,7 @@ export default function WatchScreen() {
   const [activeMirror, setActiveMirror] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [preferredQuality, setPreferredQuality] = useState<string>("manual");
 
   const { autoplay, pip, autonext } = usePlaybackSettings();
 
@@ -63,7 +65,21 @@ export default function WatchScreen() {
       const res = await getEpisodeDetail(slug);
       if (res.ok) {
         setEpisode(res.data);
-        setActiveMirror(0);
+
+        const quality =
+          (await AsyncStorage.getItem("@phinime:video_quality")) || "720p";
+        setPreferredQuality(quality);
+
+        if (quality !== "manual") {
+          const index = res.data.streamingMirrors.findIndex((m) =>
+            m.quality.toLowerCase().includes(quality.toLowerCase()),
+          );
+          const finalIndex = index !== -1 ? index : 0;
+          setActiveMirror(finalIndex);
+        } else {
+          setActiveMirror(0);
+        }
+
         autoNavigated.current = false;
         expAwarded.current = false;
         lastSavedTime.current = 0;
@@ -245,36 +261,37 @@ export default function WatchScreen() {
           <Text style={styles.animeTitle}>{episode.title}</Text>
         </View>
 
-        {episode.streamingMirrors.length > 1 && (
-          <View style={styles.mirrorSection}>
-            <Text style={styles.subSectionTitle}>Pilih Server</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.mirrorList}
-            >
-              {episode.streamingMirrors.map((mirror, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => setActiveMirror(index)}
-                  style={[
-                    styles.mirrorButton,
-                    activeMirror === index && styles.mirrorButtonActive,
-                  ]}
-                >
-                  <Text
+        {episode.streamingMirrors.length > 1 &&
+          preferredQuality === "manual" && (
+            <View style={styles.mirrorSection}>
+              <Text style={styles.subSectionTitle}>Pilih Server</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.mirrorList}
+              >
+                {episode.streamingMirrors.map((mirror, index) => (
+                  <Pressable
+                    key={index}
+                    onPress={() => setActiveMirror(index)}
                     style={[
-                      styles.mirrorText,
-                      activeMirror === index && styles.mirrorTextActive,
+                      styles.mirrorButton,
+                      activeMirror === index && styles.mirrorButtonActive,
                     ]}
                   >
-                    {mirror.quality}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+                    <Text
+                      style={[
+                        styles.mirrorText,
+                        activeMirror === index && styles.mirrorTextActive,
+                      ]}
+                    >
+                      {mirror.quality}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
         <View style={styles.navigationSection}>
           <Button
