@@ -1,7 +1,6 @@
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Icon from "@/components/Icon";
@@ -16,9 +15,7 @@ const STORAGE_KEYS = {
 };
 
 export default function PlaybackSettingScreen() {
-  const router = useRouter();
-
-  const [autoplay, setAutoplay] = useState(true);
+  const [autoplay, setAutoplay] = useState(false);
   const [pip, setPip] = useState(false);
 
   useEffect(() => {
