@@ -11,22 +11,28 @@ import SettingToggleRow from "@/components/profile/SettingToggleRow";
 
 const STORAGE_KEYS = {
   AUTOPLAY: "@phinime:autoplay",
+  AUTONEXT: "@phinime:autonext",
   PIP: "@phinime:pip",
 };
 
 export default function PlaybackSettingScreen() {
   const [autoplay, setAutoplay] = useState(false);
+  const [autonext, setAutonext] = useState(false);
   const [pip, setPip] = useState(false);
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const [storedAutoplay, storedPip] = await AsyncStorage.multiGet([
-          STORAGE_KEYS.AUTOPLAY,
-          STORAGE_KEYS.PIP,
-        ]);
+        const [storedAutoplay, storedAutonext, storedPip] =
+          await AsyncStorage.multiGet([
+            STORAGE_KEYS.AUTOPLAY,
+            STORAGE_KEYS.AUTONEXT,
+            STORAGE_KEYS.PIP,
+          ]);
         if (storedAutoplay[1] !== null)
           setAutoplay(storedAutoplay[1] === "true");
+        if (storedAutonext[1] !== null)
+          setAutonext(storedAutonext[1] === "true");
         if (storedPip[1] !== null) setPip(storedPip[1] === "true");
       } catch (e) {
         console.warn("[Pemutaran] Gagal muat pengaturan:", e);
@@ -38,6 +44,11 @@ export default function PlaybackSettingScreen() {
   const handleAutoplay = async (val: boolean) => {
     setAutoplay(val);
     await AsyncStorage.setItem(STORAGE_KEYS.AUTOPLAY, String(val));
+  };
+
+  const handleAutonext = async (val: boolean) => {
+    setAutonext(val);
+    await AsyncStorage.setItem(STORAGE_KEYS.AUTONEXT, String(val));
   };
 
   const handlePip = async (val: boolean) => {
@@ -55,7 +66,7 @@ export default function PlaybackSettingScreen() {
         <View style={styles.bannerIconWrap}>
           <Icon name="Play" size={28} color={colors.accent} />
         </View>
-        <Text style={styles.bannerTitle}>Pengaturan Pemutaran</Text>
+        <Text style={styles.bannerTitle}>Pengaturan Playback</Text>
         <Text style={styles.bannerDesc}>
           Sesuaikan cara video diputar di aplikasi ini. Pengaturan disimpan
           secara lokal di perangkat kamu.
@@ -63,17 +74,30 @@ export default function PlaybackSettingScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>KELANJUTAN OTOMATIS</Text>
-        <View style={styles.card}>
-          <SettingToggleRow
-            icon="SkipForward"
-            iconColor={colors.accent}
-            iconBg="rgba(245, 160, 212, 0.12)"
-            label="Autoplay"
-            description="Lanjutkan ke episode berikutnya secara otomatis setelah episode selesai diputar."
-            value={autoplay}
-            onValueChange={handleAutoplay}
-          />
+        <Text style={styles.sectionTitle}>OTOMATIS LANJUTKAN</Text>
+        <View style={styles.cardList}>
+          <View style={styles.card}>
+            <SettingToggleRow
+              icon="Play"
+              iconColor={colors.accent}
+              iconBg="rgba(245, 160, 212, 0.12)"
+              label="Autoplay"
+              description="Otomatis memutar video saat dibuka."
+              value={autoplay}
+              onValueChange={handleAutoplay}
+            />
+          </View>
+          <View style={styles.card}>
+            <SettingToggleRow
+              icon="SkipForward"
+              iconColor={colors.accent}
+              iconBg="rgba(245, 160, 212, 0.12)"
+              label="Autonext"
+              description="Otomatis memutar video berikutnya saat video saat ini selesai."
+              value={autonext}
+              onValueChange={handleAutonext}
+            />
+          </View>
         </View>
       </View>
 
@@ -81,11 +105,11 @@ export default function PlaybackSettingScreen() {
         <Text style={styles.sectionTitle}>MODE MENGAPUNG</Text>
         <View style={styles.card}>
           <SettingToggleRow
-            icon="PictureInPicture2"
+            icon="PictureInPicture"
             iconColor="#60A5FA"
             iconBg="rgba(96, 165, 250, 0.12)"
             label="Picture in Picture"
-            description="Biarkan video tetap muncul dalam jendela kecil mengapung saat kamu membuka aplikasi lain."
+            description="Biarkan video tetap muncul dalam player mini saat kamu membuka aplikasi lain."
             value={pip}
             onValueChange={handlePip}
           />
@@ -156,6 +180,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     marginBottom: 8,
     marginLeft: 4,
+  },
+  cardList: {
+    gap: 8,
   },
   card: {
     backgroundColor: colors.secondary,

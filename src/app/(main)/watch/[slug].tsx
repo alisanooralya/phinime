@@ -13,6 +13,7 @@ import Loader from "@/components/Loader";
 import BackButton from "@/components/BackButton";
 import VideoPlayer from "@/components/VideoPlayer";
 import EpisodeCard from "@/components/EpisodeCard";
+import usePlaybackSettings from "@/hooks/usePlaybackSettings";
 
 import { Toast } from "@/components/Alert";
 import { useToast } from "@/hooks/useAlert";
@@ -32,9 +33,12 @@ export default function WatchScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const { autoplay, pip, autonext } = usePlaybackSettings();
+
   const expAwarded = useRef(false);
   const lastSavedTime = useRef(0);
   const initialProgress = useRef<number | null>(null);
+  const autoNavigated = useRef(false);
 
   useEffect(() => {
     fetchEpisode();
@@ -60,6 +64,7 @@ export default function WatchScreen() {
       if (res.ok) {
         setEpisode(res.data);
         setActiveMirror(0);
+        autoNavigated.current = false;
         expAwarded.current = false;
         lastSavedTime.current = 0;
 
@@ -92,12 +97,12 @@ export default function WatchScreen() {
     const performSeek = (timeMs: number) => {
       const timeSec = timeMs / 1000;
       player.currentTime = timeSec;
-      player.play();
+      if (autoplay) player.play();
 
       setTimeout(() => {
         if (Math.abs(player.currentTime - timeSec) > 1) {
           player.currentTime = timeSec;
-          player.play();
+          if (autoplay) player.play();
         }
       }, 500);
     };
@@ -106,7 +111,7 @@ export default function WatchScreen() {
       if (initialProgress.current > 0) {
         performSeek(initialProgress.current);
       } else {
-        player.play();
+        if (autoplay) player.play();
       }
       initialProgress.current = null;
     }
@@ -118,7 +123,7 @@ export default function WatchScreen() {
         if (initialProgress.current > 0) {
           performSeek(initialProgress.current);
         } else {
-          player.play();
+          if (autoplay) player.play();
         }
         initialProgress.current = null;
       }
@@ -126,7 +131,7 @@ export default function WatchScreen() {
     return () => {
       subscription.remove();
     };
-  }, [player]);
+  }, [player, autoplay]);
 
   useEffect(() => {
     if (!userId || !episode || !player) return;
@@ -164,6 +169,17 @@ export default function WatchScreen() {
             info("EXP Bertambah", "Lanjutkan menonton untuk naik level!");
           }
         }
+
+        if (
+          autonext &&
+          !autoNavigated.current &&
+          episode.nextEpisode &&
+          duration > 0 &&
+          currentTime / duration > 0.995
+        ) {
+          autoNavigated.current = true;
+          router.setParams({ slug: episode.nextEpisode.slug });
+        }
       }
     }, 5000);
 
@@ -193,6 +209,13 @@ export default function WatchScreen() {
       />
       <View style={styles.header}>
         <BackButton title={`Episode ${episode.episodeNumber}`} />
+        <Button
+          onPress={() => router.push("/(main)/settings/playback")}
+          button={styles.headerButton}
+          wrapper={styles.headerButtonWrapper}
+        >
+          <Icon name="Settings" size={20} color={colors.text} />
+        </Button>
       </View>
 
       <View
@@ -206,6 +229,7 @@ export default function WatchScreen() {
           title={episode.title}
           loading={loading}
           onFullscreenChange={setIsFullscreen}
+          pip={pip}
         />
       </View>
 
@@ -355,6 +379,23 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 999,
+    backgroundColor: colors.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 0.8,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  headerButtonWrapper: {
+    borderRadius: 999,
   },
   playerContainer: {
     width: "100%",

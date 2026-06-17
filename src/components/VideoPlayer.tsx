@@ -25,6 +25,7 @@ interface CustomVideoPlayerProps {
   loading?: boolean;
   onFullscreenToggle?: () => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
+  pip?: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -39,6 +40,7 @@ export default function VideoPlayer({
   loading,
   onFullscreenToggle,
   onFullscreenChange,
+  pip,
 }: CustomVideoPlayerProps) {
   const insets = useSafeAreaInsets();
   const videoViewRef = useRef<VideoView>(null);
@@ -224,6 +226,8 @@ export default function VideoPlayer({
         nativeControls={false}
         contentFit="contain"
         fullscreenOptions={{ enable: true }}
+        allowsPictureInPicture={pip}
+        startsPictureInPictureAutomatically={pip && isPlaying}
         onFullscreenEnter={handleFullscreenEnter}
         onFullscreenExit={handleFullscreenExit}
       />
