@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
-import Text from "@/components/Text";
-import Icon from "@/components/Icon";
+
+import Icon from "../Icon";
+import Text from "../Text";
 import colors from "@/constants/colors";
 
 interface SettingToggleRowProps {
@@ -17,7 +18,7 @@ interface SettingToggleRowProps {
 const TRACK_WIDTH = 50;
 const TRACK_HEIGHT = 28;
 const THUMB_SIZE = 22;
-const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - 4; // 4 = padding kiri+kanan
+const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - 5.4;
 
 export default function SettingToggleRow({
   icon,
@@ -94,7 +95,6 @@ export default function SettingToggleRow({
         ) : null}
       </View>
 
-      {/* Custom Animated Toggle */}
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: "600",
     color: colors.text,
   },
   description: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: "600",
     color: colors.textDark,
     lineHeight: 16,
   },

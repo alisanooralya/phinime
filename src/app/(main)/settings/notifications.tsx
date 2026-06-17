@@ -1,7 +1,6 @@
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Icon from "@/components/Icon";
@@ -11,86 +10,85 @@ import BackButton from "@/components/BackButton";
 import SettingToggleRow from "@/components/profile/SettingToggleRow";
 
 const STORAGE_KEYS = {
-  AUTOPLAY: "@phinime:autoplay",
-  PIP: "@phinime:pip",
+  BOOKMARKS: "@phinime:notif_bookmarks",
+  RELEASES: "@phinime:notif_releases",
 };
 
-export default function PlaybackSettingScreen() {
-  const router = useRouter();
-
-  const [autoplay, setAutoplay] = useState(true);
-  const [pip, setPip] = useState(false);
+export default function NotificationSettingScreen() {
+  const [notifBookmarks, setNotifBookmarks] = useState(true);
+  const [notifReleases, setNotifReleases] = useState(false);
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const [storedAutoplay, storedPip] = await AsyncStorage.multiGet([
-          STORAGE_KEYS.AUTOPLAY,
-          STORAGE_KEYS.PIP,
+        const [storedBookmarks, storedReleases] = await AsyncStorage.multiGet([
+          STORAGE_KEYS.BOOKMARKS,
+          STORAGE_KEYS.RELEASES,
         ]);
-        if (storedAutoplay[1] !== null)
-          setAutoplay(storedAutoplay[1] === "true");
-        if (storedPip[1] !== null) setPip(storedPip[1] === "true");
+        if (storedBookmarks[1] !== null)
+          setNotifBookmarks(storedBookmarks[1] === "true");
+        if (storedReleases[1] !== null)
+          setNotifReleases(storedReleases[1] === "true");
       } catch (e) {
-        console.warn("[Pemutaran] Gagal muat pengaturan:", e);
+        console.warn("[Notifikasi] Gagal muat pengaturan:", e);
       }
     }
     loadSettings();
   }, []);
 
-  const handleAutoplay = async (val: boolean) => {
-    setAutoplay(val);
-    await AsyncStorage.setItem(STORAGE_KEYS.AUTOPLAY, String(val));
+  const handleNotifBookmarks = async (val: boolean) => {
+    setNotifBookmarks(val);
+    await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKS, String(val));
   };
 
-  const handlePip = async (val: boolean) => {
-    setPip(val);
-    await AsyncStorage.setItem(STORAGE_KEYS.PIP, String(val));
+  const handleNotifReleases = async (val: boolean) => {
+    setNotifReleases(val);
+    await AsyncStorage.setItem(STORAGE_KEYS.RELEASES, String(val));
   };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
-        <BackButton title="Pemutaran" />
+        <BackButton title="Notifikasi" />
       </View>
 
       <View style={styles.banner}>
         <View style={styles.bannerIconWrap}>
-          <Icon name="Play" size={28} color={colors.accent} />
+          <Icon name="Bell" size={28} color={colors.accent} />
         </View>
-        <Text style={styles.bannerTitle}>Pengaturan Pemutaran</Text>
+        <Text style={styles.bannerTitle}>Pengaturan Notifikasi</Text>
         <Text style={styles.bannerDesc}>
-          Sesuaikan cara video diputar di aplikasi ini. Pengaturan disimpan
-          secara lokal di perangkat kamu.
+          Kelola bagaimana kamu menerima pemberitahuan dari Phinime tentang
+          anime favoritmu.
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>KELANJUTAN OTOMATIS</Text>
+        <Text style={styles.sectionTitle}>ANIME FAVORIT</Text>
         <View style={styles.card}>
           <SettingToggleRow
-            icon="SkipForward"
+            icon="Bookmark"
             iconColor={colors.accent}
             iconBg="rgba(245, 160, 212, 0.12)"
-            label="Autoplay"
-            description="Lanjutkan ke episode berikutnya secara otomatis setelah episode selesai diputar."
-            value={autoplay}
-            onValueChange={handleAutoplay}
+            label="Anime Bookmark"
+            description="Dapatkan notifikasi saat ada episode baru untuk anime yang kamu bookmark."
+            value={notifBookmarks}
+            onValueChange={handleNotifBookmarks}
           />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>MODE MENGAPUNG</Text>
+        <Text style={styles.sectionTitle}>UPDATE HARIAN</Text>
         <View style={styles.card}>
           <SettingToggleRow
-            icon="PictureInPicture2"
+            icon="Calendar"
             iconColor="#60A5FA"
             iconBg="rgba(96, 165, 250, 0.12)"
-            label="Picture in Picture"
-            description="Biarkan video tetap muncul dalam jendela kecil mengapung saat kamu membuka aplikasi lain."
-            value={pip}
-            onValueChange={handlePip}
+            label="Rilis Hari Ini"
+            description="Terima ringkasan daftar anime yang akan tayang setiap harinya."
+            value={notifReleases}
+            onValueChange={handleNotifReleases}
           />
         </View>
       </View>
@@ -99,8 +97,8 @@ export default function PlaybackSettingScreen() {
         <View style={styles.infoRow}>
           <Icon name="Info" size={14} color={colors.textDark} />
           <Text style={styles.infoText}>
-            Fitur Picture in Picture membutuhkan dukungan dari sistem operasi
-            perangkat Android 8+.
+            Pastikan izin notifikasi untuk aplikasi Phinime telah aktif di
+            pengaturan sistem perangkat kamu.
           </Text>
         </View>
       </View>

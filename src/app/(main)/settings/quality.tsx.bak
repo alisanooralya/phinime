@@ -246,12 +246,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   optionLabel: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: "700",
     color: colors.text,
   },
   optionDesc: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 12,
     color: colors.textDark,
   },
   radio: {

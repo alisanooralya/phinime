@@ -218,13 +218,6 @@ export default function ProfileScreen() {
     );
   }, [router, confirm]);
 
-  const handleFeatureNotAvailable = useCallback(
-    (featureName: string) => {
-      toastInfo("Segera Hadir", `Fitur ${featureName} akan segera hadir.`);
-    },
-    [toastInfo],
-  );
-
   const handleDeleteAccount = useCallback(() => {
     confirm(
       "Hapus Akun",
@@ -319,7 +312,7 @@ export default function ProfileScreen() {
             <MenuItem
               icon="Bell"
               label="Notifikasi"
-              onPress={() => handleFeatureNotAvailable("Notifikasi")}
+              onPress={() => router.push("/(main)/settings/notifications")}
             />
           </View>
         </View>

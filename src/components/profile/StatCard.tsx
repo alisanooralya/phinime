@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
-import Text from "@/components/Text";
+
+import Text from "../Text";
 import colors from "@/constants/colors";
 
 interface StatCardProps {
