@@ -2,18 +2,13 @@
   "expo": {
     "name": "phinime",
     "slug": "phinime",
-    "version": "2.0.0",
+    "version": "0.9.3",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "phinime",
     "experiments": {
       "typedRoutes": true
-    },
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#111111"
     },
     "android": {
       "predictiveBackGestureEnabled": false,
@@ -38,6 +33,14 @@
           "android": {
             "abiFilters": ["arm64-v8a"]
           }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#111111",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
         }
       ]
     ],
