@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useRef, useEffect, useState, useCallback } from "react";
 import {
@@ -48,7 +48,7 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
@@ -76,8 +76,51 @@ export default function ProfileScreen() {
     hide: hideToast,
   } = useToast();
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchAll();
+    }, []),
+  );
+
   useEffect(() => {
-    fetchAll();
+    if (isActive) {
+      fetchAll();
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    const setupRealtime = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const uid = authData.user?.id;
+      if (!uid) return;
+
+      const channel = supabase
+        .channel("profile-exp-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "user_exp",
+            filter: `user_id=eq.${uid}`,
+          },
+          (payload) => {
+            setExpData(payload.new as UserExp);
+          },
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    let channelRef: any;
+    setupRealtime().then((ch) => {
+      channelRef = ch;
+    });
+
+    return () => {
+      if (channelRef) supabase.removeChannel(channelRef);
+    };
   }, []);
 
   async function fetchAll() {

@@ -51,6 +51,38 @@ function ExpCard({ variant = "full" }: { variant?: "compact" | "full" }) {
 
   useEffect(() => {
     fetchExp();
+    const listenChanges = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const uid = authData.user?.id;
+      if (!uid) return;
+
+      const channel = supabase
+        .channel("exp-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "user_exp",
+            filter: `user_id=eq.${uid}`,
+          },
+          (payload) => {
+            setExpData(payload.new as UserExp);
+          },
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    let channelRef: any;
+    listenChanges().then((ch) => {
+      channelRef = ch;
+    });
+
+    return () => {
+      if (channelRef) supabase.removeChannel(channelRef);
+    };
   }, []);
 
   async function fetchExp() {

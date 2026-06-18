@@ -97,19 +97,23 @@ export default function Index() {
                 <View style={{ flex: 1 }}>
                   <FadeTab isActive={activeTab === 0}>
                     <HomeScreen
+                      isActive={activeTab === 0}
                       onNavigateToList={(type) =>
                         handleSelectTab(1, { initialType: type })
                       }
                     />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 1}>
-                    <ListScreen initialParams={tabParams} />
+                    <ListScreen
+                      initialParams={tabParams}
+                      isActive={activeTab === 1}
+                    />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 2}>
-                    <LibraryScreen />
+                    <LibraryScreen isActive={activeTab === 2} />
                   </FadeTab>
                   <FadeTab isActive={activeTab === 3}>
-                    <ProfileScreen />
+                    <ProfileScreen isActive={activeTab === 3} />
                   </FadeTab>
                 </View>
               </PanGestureHandler>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -13,10 +13,11 @@ import Header from "@/components/Header";
 import HistoryScreen from "./HistoryScreen";
 import BookmarkScreen from "./BookmarkScreen";
 
-const PreservedHistory = memo(HistoryScreen);
-const PreservedBookmark = memo(BookmarkScreen);
-
-export default function LibraryScreen() {
+export default function LibraryScreen({
+  isActive: isTabActive,
+}: {
+  isActive?: boolean;
+}) {
   const [activeTab, setActiveTab] = useState<"history" | "bookmark">("history");
   const [containerWidth, setContainerWidth] = useState(0);
   const scroll = useRef(new Animated.Value(0)).current;
@@ -87,7 +88,10 @@ export default function LibraryScreen() {
         <View
           style={[styles.contentArea, activeTab !== "history" && styles.hidden]}
         >
-          <PreservedHistory isEmbedded />
+          <HistoryScreen
+            isEmbedded
+            isActive={isTabActive && activeTab === "history"}
+          />
         </View>
         <View
           style={[
@@ -95,7 +99,10 @@ export default function LibraryScreen() {
             activeTab !== "bookmark" && styles.hidden,
           ]}
         >
-          <PreservedBookmark isEmbedded />
+          <BookmarkScreen
+            isEmbedded
+            isActive={isTabActive && activeTab === "bookmark"}
+          />
         </View>
       </View>
     </View>

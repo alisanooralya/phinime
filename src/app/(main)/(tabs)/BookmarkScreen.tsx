@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useRef, useEffect, useState, useCallback, memo } from "react";
 import {
   View,
@@ -64,11 +64,12 @@ const BookmarkCard = memo(({ item, onPress, onLongPress }: CardProps) => (
     onLongPress={() => onLongPress(item)}
   />
 ));
-
 export default function BookmarkScreen({
   isEmbedded,
+  isActive,
 }: {
   isEmbedded?: boolean;
+  isActive?: boolean;
 }) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
@@ -79,9 +80,40 @@ export default function BookmarkScreen({
 
   const { state: alertState, confirm, hide: hideAlert } = useAlertDialog();
 
+  useFocusEffect(
+    useCallback(() => {
+      initUser();
+    }, []),
+  );
+
   useEffect(() => {
-    initUser();
-  }, []);
+    if (isActive) {
+      initUser();
+    }
+  }, [isActive]);
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel("bookmark-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bookmarks",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchBookmarks(userId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   async function initUser() {
     const { data } = await supabase.auth.getUser();

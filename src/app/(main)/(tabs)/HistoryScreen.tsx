@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useRef, useEffect, useState, useCallback, memo } from "react";
 import {
   View,
@@ -145,11 +145,12 @@ const HistoryRow = memo(({ items, onPress }: RowProps) => (
       ))}
   </View>
 ));
-
 export default function HistoryScreen({
   isEmbedded,
+  isActive,
 }: {
   isEmbedded?: boolean;
+  isActive?: boolean;
 }) {
   const router = useRouter();
   const scroll = useRef(new Animated.Value(0)).current;
@@ -158,14 +159,48 @@ export default function HistoryScreen({
     { title: string; data: WatchHistory[][] }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      initUser();
+    }, []),
+  );
 
   useEffect(() => {
-    initUser();
-  }, []);
+    if (isActive) {
+      initUser();
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel("history-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "watch_history",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchHistory(userId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   async function initUser() {
     const { data } = await supabase.auth.getUser();
     const uid = data.user?.id ?? null;
+    setUserId(uid);
 
     if (uid) await fetchHistory(uid);
     setLoading(false);
@@ -264,7 +299,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: GAP,
-    marginBottom: 16,
   },
   cardWrapper: {
     width: CARD_WIDTH,
