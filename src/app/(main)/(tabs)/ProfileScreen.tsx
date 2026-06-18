@@ -106,7 +106,7 @@ export default function ProfileScreen() {
       ]);
 
       const completed = history.filter(
-        (h) => h.duration_ms > 0 && h.progress_ms / h.duration_ms >= 0.9,
+        (h) => h.duration_ms > 0 && h.progress_ms / h.duration_ms >= 0.8,
       ).length;
 
       setExpData(exp);

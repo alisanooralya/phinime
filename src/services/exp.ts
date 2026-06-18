@@ -153,12 +153,44 @@ export async function getUserExp(userId: string): Promise<UserExp | null> {
 
 export async function addEpisodeExp(
   userId: string,
+  episodeId: string,
+  progressMs: number,
+  durationMs: number,
 ): Promise<LevelUpResult | null> {
+  // 1. Validasi minimal 80% durasi ditonton
+  if (durationMs <= 0 || progressMs / durationMs < 0.8) {
+    return null;
+  }
+
+  // 2. Cegah farming dengan menonton ulang episode yang sama
+  // Cek apakah episode ini sudah pernah memberikan EXP ke user ini
+  const { data: existingClaim } = await supabase
+    .from("user_episode_exp")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("episode_id", episodeId)
+    .maybeSingle();
+
+  if (existingClaim) return null;
+
   const current = await getUserExp(userId);
   if (!current) return null;
 
   const newCounter = current.ep_counter + 1;
   const gainedExp = newCounter % 2 === 0 ? EXP_PER_EPISODE_PAIR : 0;
+
+  // Catat claim episode ini agar tidak bisa diklaim lagi
+  const { error: claimError } = await supabase.from("user_episode_exp").insert({
+    user_id: userId,
+    episode_id: episodeId,
+  });
+
+  if (claimError) {
+    console.error("[EXP] Gagal mencatat claim episode:", claimError.message);
+    // Jika gagal mencatat, jangan lanjut tambah exp untuk menghindari double claim
+    // Kecuali jika errornya karena table tidak ada, maka kita tetap biarkan (opsional)
+    return null;
+  }
 
   if (gainedExp === 0) {
     await supabase

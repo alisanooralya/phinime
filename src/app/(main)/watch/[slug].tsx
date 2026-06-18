@@ -175,10 +175,10 @@ export default function WatchScreen() {
         if (
           !expAwarded.current &&
           duration > 0 &&
-          currentTime / duration > 0.9
+          currentTime / duration >= 0.8
         ) {
           expAwarded.current = true;
-          const res = await addEpisodeExp(userId);
+          const res = await addEpisodeExp(userId, slug!, currentTime, duration);
           if (res?.didLevelUp) {
             success("Level Up!", `Selamat! Kamu naik ke level ${res.newLevel}`);
           } else if (res) {

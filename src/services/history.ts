@@ -34,7 +34,7 @@ export function getProgressPercent(history: WatchHistory): number {
 }
 
 export function isWatched(history: WatchHistory): boolean {
-  return getProgressPercent(history) >= 90;
+  return getProgressPercent(history) >= 80;
 }
 
 export function formatProgress(history: WatchHistory): string {
