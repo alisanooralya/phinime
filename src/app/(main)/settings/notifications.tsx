@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -39,11 +40,53 @@ export default function NotificationSettingScreen() {
   const handleNotifBookmarks = async (val: boolean) => {
     setNotifBookmarks(val);
     await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKS, String(val));
+    if (val) {
+      await requestPermissions();
+    }
   };
 
   const handleNotifReleases = async (val: boolean) => {
     setNotifReleases(val);
     await AsyncStorage.setItem(STORAGE_KEYS.RELEASES, String(val));
+    if (val) {
+      await requestPermissions();
+    }
+  };
+
+  const requestPermissions = async () => {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      Alert.alert(
+        "Izin Ditolak",
+        "Kamu perlu mengizinkan notifikasi untuk mendapatkan update anime.",
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const scheduleTestNotification = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Phinime Test Notification 🔔",
+        body: "Yeay! Notifikasi berhasil dikonfigurasi dengan benar.",
+        data: { data: "test data" },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+      },
+    });
+    Alert.alert("Berhasil", "Notifikasi akan muncul dalam 2 detik.");
   };
 
   return (
@@ -91,6 +134,18 @@ export default function NotificationSettingScreen() {
             onValueChange={handleNotifReleases}
           />
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PENGUJIAN</Text>
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={scheduleTestNotification}
+          activeOpacity={0.8}
+        >
+          <Icon name="Send" size={20} color={colors.text} />
+          <Text style={styles.testButtonText}>Kirim Notifikasi Tes</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={[styles.section, styles.infoBox]}>
@@ -162,6 +217,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: 16,
     overflow: "hidden",
+  },
+  testButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.accent,
+    paddingVertical: 14,
+    borderRadius: 16,
+    gap: 10,
+  },
+  testButtonText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.text,
   },
   infoBox: {
     marginTop: 4,

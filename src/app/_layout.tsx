@@ -1,10 +1,31 @@
 import { useFonts } from "expo-font";
 import { useEffect, useState } from "react";
 import { SplashScreen, Stack } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
+
 import { errorBus } from "@/services/api/utils/errorBus";
 import MaintenanceScreen from "@/components/MaintenanceScreen";
 
 SplashScreen.preventAutoHideAsync();
+
+// Konfigurasi bagaimana notifikasi ditampilkan saat aplikasi terbuka
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+if (Platform.OS === "android") {
+  Notifications.setNotificationChannelAsync("default", {
+    name: "Default",
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#FF231F7C",
+  });
+}
 
 export default function RootLayout() {
   const [isMaintenance, setIsMaintenance] = useState(false);
@@ -23,7 +44,16 @@ export default function RootLayout() {
       }
     });
 
-    return () => unsubscribe();
+    // Listener saat notifikasi diklik
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notifikasi diklik:", response);
+      });
+
+    return () => {
+      unsubscribe();
+      responseListener.remove();
+    };
   }, []);
 
   useEffect(() => {
