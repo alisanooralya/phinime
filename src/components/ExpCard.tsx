@@ -59,8 +59,9 @@ function ExpCard({ variant = "full" }: { variant?: "compact" | "full" }) {
       const uid = authData.user?.id;
       if (!uid) return;
 
-      channelRef = supabase
-        .channel(`exp-changes-${uid}`)
+      const channel = supabase.channel(`exp-changes-${uid}`);
+
+      channel
         .on(
           "postgres_changes",
           {
@@ -73,7 +74,11 @@ function ExpCard({ variant = "full" }: { variant?: "compact" | "full" }) {
             setExpData(payload.new as UserExp);
           },
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            channelRef = channel;
+          }
+        });
     };
 
     initRealtime();
