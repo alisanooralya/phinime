@@ -12,6 +12,7 @@
     "android": {
       "predictiveBackGestureEnabled": false,
       "package": "com.phinime",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#111111"

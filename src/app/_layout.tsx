@@ -1,15 +1,13 @@
 import { useFonts } from "expo-font";
-import { useEffect, useState } from "react";
-import { SplashScreen, Stack } from "expo-router";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
+import { useEffect, useState, useRef } from "react";
+import { useRouter, SplashScreen, Stack } from "expo-router";
 
 import { errorBus } from "@/services/api/utils/errorBus";
 import MaintenanceScreen from "@/components/MaintenanceScreen";
 
 SplashScreen.preventAutoHideAsync();
-
-// Konfigurasi bagaimana notifikasi ditampilkan saat aplikasi terbuka
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -37,6 +35,21 @@ export default function RootLayout() {
     "Circular-ExtraBold": require("@/assets/fonts/Circular-ExtraBold.ttf"),
   });
 
+  const router = useRouter();
+  const responseListener = useRef<any>();
+
+  useEffect(() => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notifikasi diklik:", response);
+        const slug = response.notification.request.content.data?.slug;
+        if (slug) {
+          router.push(`/watch/${slug}`);
+        }
+      });
+    return () => responseListener.current?.remove();
+  }, []);
+
   useEffect(() => {
     const unsubscribe = errorBus.subscribe((status) => {
       if (status === 502 || status >= 500) {
@@ -44,15 +57,8 @@ export default function RootLayout() {
       }
     });
 
-    // Listener saat notifikasi diklik
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notifikasi diklik:", response);
-      });
-
     return () => {
       unsubscribe();
-      responseListener.remove();
     };
   }, []);
 

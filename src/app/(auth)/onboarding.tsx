@@ -22,9 +22,11 @@ import Loader from "@/components/Loader";
 import Button from "@/components/Button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { supabase } from "@/lib/supabase";
 import { Toast } from "@/components/Alert";
 import { useToast } from "@/hooks/useAlert";
 import { signInWithGoogle } from "@/services/auth";
+import { registerPushToken } from "@/services/notifications";
 import OnBoarding, { OnBoardingData } from "@/constants/onboarding";
 
 const ARROW_BTN_SIZE = 56;
@@ -255,10 +257,12 @@ export default function OnboardingScreen() {
     setLoginLoading(false);
 
     if (result.success) {
-      try {
-        await AsyncStorage.setItem("isLoggedIn", "true");
-      } catch (err) {}
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
+      if (user) await registerPushToken(user.id);
+      await AsyncStorage.setItem("isLoggedIn", "true");
       success("Berhasil Login", "Selamat datang kembali!");
       setTimeout(() => {
         router.replace("/(main)/(tabs)");

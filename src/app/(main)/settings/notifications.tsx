@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Alert } from "react-native";
+import { StyleSheet, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { supabase } from "@/lib/supabase";
-import { getBookmarks } from "@/services/bookmark";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -13,85 +12,56 @@ import BackButton from "@/components/BackButton";
 import SettingToggleRow from "@/components/profile/SettingToggleRow";
 
 const STORAGE_KEYS = {
-  BOOKMARKS: "@phinime:notif_bookmarks",
-  RELEASES: "@phinime:notif_releases",
+  BOOKMARK: "@phinime:notif_bookmark",
+  GLOBAL: "@phinime:notif_global",
 };
 
 export default function NotificationSettingScreen() {
-  const [notifBookmarks, setNotifBookmarks] = useState(true);
-  const [notifReleases, setNotifReleases] = useState(false);
+  const [notifBookmark, setNotifBookmark] = useState(true);
+  const [notifGlobal, setNotifGlobal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const [storedBookmarks, storedReleases] = await AsyncStorage.multiGet([
-          STORAGE_KEYS.BOOKMARKS,
-          STORAGE_KEYS.RELEASES,
+        const [storedBookmark, storedGlobal] = await AsyncStorage.multiGet([
+          STORAGE_KEYS.BOOKMARK,
+          STORAGE_KEYS.GLOBAL,
         ]);
-        if (storedBookmarks[1] !== null)
-          setNotifBookmarks(storedBookmarks[1] === "true");
-        if (storedReleases[1] !== null)
-          setNotifReleases(storedReleases[1] === "true");
+        if (storedBookmark[1] !== null) {
+          setNotifBookmark(storedBookmark[1] === "true");
+        }
+        if (storedGlobal[1] !== null) {
+          setNotifGlobal(storedGlobal[1] === "true");
+        }
       } catch (e) {
         console.warn("[Notifikasi] Gagal muat pengaturan:", e);
+      } finally {
+        setLoading(false);
       }
     }
     loadSettings();
   }, []);
 
-  const handleNotifBookmarks = async (val: boolean) => {
-    setNotifBookmarks(val);
-    await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKS, String(val));
-    if (val) {
-      const hasPermission = await requestPermissions();
-      if (hasPermission) {
-        await scheduleOngoingAnimeNotifications();
-      }
-    } else {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-    }
-  };
+  const syncToServer = async (
+    key: "notif_bookmark" | "notif_global",
+    value: boolean,
+  ) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
-  const scheduleOngoingAnimeNotifications = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+    const { error } = await supabase.from("user_settings").upsert(
+      {
+        user_id: user.id,
+        [key]: value,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
 
-      const bookmarks = await getBookmarks(user.id);
-      const ongoingBookmarks = bookmarks.filter(
-        (b) => b.status?.toLowerCase() === "ongoing",
-      );
-
-      // Batalkan jadwal lama sebelum membuat yang baru
-      await Notifications.cancelAllScheduledNotificationsAsync();
-
-      for (const anime of ongoingBookmarks) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: "Update Anime Favorit! 📺",
-            body: `${anime.anime_title} berstatus Ongoing. Jangan lewatkan episode terbarunya!`,
-            data: { slug: anime.anime_id },
-          },
-          trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-            seconds: 86400, // Cek berkala setiap 24 jam
-            repeats: true,
-          },
-        });
-      }
-    } catch (e) {
-      console.warn("[Notifikasi] Gagal menjadwalkan notifikasi bookmark:", e);
-    }
-  };
-
-  const handleNotifReleases = async (val: boolean) => {
-    setNotifReleases(val);
-    await AsyncStorage.setItem(STORAGE_KEYS.RELEASES, String(val));
-    if (val) {
-      await requestPermissions();
-    }
+    if (error) throw error;
   };
 
   const requestPermissions = async () => {
@@ -110,6 +80,40 @@ export default function NotificationSettingScreen() {
       return false;
     }
     return true;
+  };
+
+  const handleNotifBookmark = async (val: boolean) => {
+    if (val) {
+      const granted = await requestPermissions();
+      if (!granted) return;
+    }
+
+    setNotifBookmark(val);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARK, String(val));
+      await syncToServer("notif_bookmark", val);
+    } catch (e) {
+      console.warn("[Notifikasi] Gagal simpan notif_bookmark:", e);
+      setNotifBookmark(!val);
+      Alert.alert("Gagal", "Tidak bisa menyimpan pengaturan, coba lagi.");
+    }
+  };
+
+  const handleNotifGlobal = async (val: boolean) => {
+    if (val) {
+      const granted = await requestPermissions();
+      if (!granted) return;
+    }
+
+    setNotifGlobal(val);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.GLOBAL, String(val));
+      await syncToServer("notif_global", val);
+    } catch (e) {
+      console.warn("[Notifikasi] Gagal simpan notif_global:", e);
+      setNotifGlobal(!val);
+      Alert.alert("Gagal", "Tidak bisa menyimpan pengaturan, coba lagi.");
+    }
   };
 
   return (
@@ -138,23 +142,25 @@ export default function NotificationSettingScreen() {
             iconBg="rgba(245, 160, 212, 0.12)"
             label="Anime Bookmark"
             description="Dapatkan notifikasi saat ada episode baru untuk anime yang kamu bookmark."
-            value={notifBookmarks}
-            onValueChange={handleNotifBookmarks}
+            value={notifBookmark}
+            onValueChange={handleNotifBookmark}
+            disabled={loading}
           />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>UPDATE HARIAN</Text>
+        <Text style={styles.sectionTitle}>UPDATE GLOBAL</Text>
         <View style={styles.card}>
           <SettingToggleRow
             icon="Calendar"
             iconColor="#60A5FA"
             iconBg="rgba(96, 165, 250, 0.12)"
-            label="Rilis Hari Ini"
-            description="Terima ringkasan daftar anime yang akan tayang setiap harinya."
-            value={notifReleases}
-            onValueChange={handleNotifReleases}
+            label="Semua Anime Update"
+            description="Dapatkan notifikasi untuk semua anime yang baru update episode, walau belum kamu bookmark."
+            value={notifGlobal}
+            onValueChange={handleNotifGlobal}
+            disabled={loading}
           />
         </View>
       </View>
@@ -163,8 +169,9 @@ export default function NotificationSettingScreen() {
         <View style={styles.infoRow}>
           <Icon name="Info" size={14} color={colors.textDark} />
           <Text style={styles.infoText}>
-            Pastikan izin notifikasi untuk aplikasi Phinime telah aktif di
-            pengaturan sistem perangkat kamu.
+            Notifikasi dikirim dari server saat episode baru tersedia. Pastikan
+            izin notifikasi untuk aplikasi Phinime telah aktif di pengaturan
+            sistem perangkat kamu.
           </Text>
         </View>
       </View>
