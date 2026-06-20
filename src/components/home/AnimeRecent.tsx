@@ -34,7 +34,7 @@ const RenderItem = memo(({ item, onPress }: RenderItemProps) => {
     <AnimeCardComponent
       title={item.title}
       poster={item.poster}
-      score={item.status || undefined}
+      score={item.status || "End"}
       subTitle={subtitle}
       width={RECENT_CARD_WIDTH}
       onPress={onPress}
