@@ -45,7 +45,11 @@ function ExpProgressBar({
   );
 }
 
-export default function ExpCard({ variant = "full" }: { variant?: "compact" | "full" }) {
+export default function ExpCard({
+  variant = "full",
+}: {
+  variant?: "compact" | "full";
+}) {
   const [expData, setExpData] = useState<UserExp | null>(null);
   const [loading, setLoading] = useState(true);
 
