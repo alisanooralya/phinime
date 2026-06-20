@@ -52,16 +52,15 @@ export default function ExpCard({ variant = "full" }: { variant?: "compact" | "f
   useEffect(() => {
     fetchExp();
 
-    let channelRef: any;
+    let channel: any;
 
-    const initRealtime = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const uid = authData.user?.id;
+    const setupSubscription = async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
       if (!uid) return;
 
-      const channel = supabase.channel(`exp-changes-${uid}`);
-
-      channel
+      channel = supabase
+        .channel(`exp-changes-${uid}`)
         .on(
           "postgres_changes",
           {
@@ -74,18 +73,14 @@ export default function ExpCard({ variant = "full" }: { variant?: "compact" | "f
             setExpData(payload.new as UserExp);
           },
         )
-        .subscribe((status) => {
-          if (status === "SUBSCRIBED") {
-            channelRef = channel;
-          }
-        });
+        .subscribe();
     };
 
-    initRealtime();
+    setupSubscription();
 
     return () => {
-      if (channelRef) {
-        supabase.removeChannel(channelRef);
+      if (channel) {
+        supabase.removeChannel(channel);
       }
     };
   }, []);
