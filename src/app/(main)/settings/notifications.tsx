@@ -71,24 +71,6 @@ export default function NotificationSettingScreen() {
     return true;
   };
 
-  const scheduleTestNotification = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
-
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Phinime Test Notification 🔔",
-        body: "Yeay! Notifikasi berhasil dikonfigurasi dengan benar.",
-        data: { data: "test data" },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 2,
-      },
-    });
-    Alert.alert("Berhasil", "Notifikasi akan muncul dalam 2 detik.");
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
@@ -134,18 +116,6 @@ export default function NotificationSettingScreen() {
             onValueChange={handleNotifReleases}
           />
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>PENGUJIAN</Text>
-        <TouchableOpacity
-          style={styles.testButton}
-          onPress={scheduleTestNotification}
-          activeOpacity={0.8}
-        >
-          <Icon name="Send" size={20} color={colors.text} />
-          <Text style={styles.testButtonText}>Kirim Notifikasi Tes</Text>
-        </TouchableOpacity>
       </View>
 
       <View style={[styles.section, styles.infoBox]}>
@@ -217,20 +187,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: 16,
     overflow: "hidden",
-  },
-  testButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.accent,
-    paddingVertical: 14,
-    borderRadius: 16,
-    gap: 10,
-  },
-  testButtonText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: colors.text,
   },
   infoBox: {
     marginTop: 4,
