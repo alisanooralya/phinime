@@ -3,6 +3,8 @@ import { StyleSheet, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
+import { supabase } from "@/lib/supabase";
+import { getBookmarks } from "@/services/bookmark";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -41,7 +43,46 @@ export default function NotificationSettingScreen() {
     setNotifBookmarks(val);
     await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKS, String(val));
     if (val) {
-      await requestPermissions();
+      const hasPermission = await requestPermissions();
+      if (hasPermission) {
+        await scheduleOngoingAnimeNotifications();
+      }
+    } else {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    }
+  };
+
+  const scheduleOngoingAnimeNotifications = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const bookmarks = await getBookmarks(user.id);
+      const ongoingBookmarks = bookmarks.filter(
+        (b) => b.status?.toLowerCase() === "ongoing",
+      );
+
+      // Batalkan jadwal lama sebelum membuat yang baru
+      await Notifications.cancelAllScheduledNotificationsAsync();
+
+      for (const anime of ongoingBookmarks) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Update Anime Favorit! 📺",
+            body: `${anime.anime_title} berstatus Ongoing. Jangan lewatkan episode terbarunya!`,
+            data: { slug: anime.anime_id },
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+            seconds: 86400, // Cek berkala setiap 24 jam
+            repeats: true,
+          },
+        });
+      }
+    } catch (e) {
+      console.warn("[Notifikasi] Gagal menjadwalkan notifikasi bookmark:", e);
     }
   };
 
