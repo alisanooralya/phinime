@@ -51,7 +51,6 @@ export default function VideoPlayer({
   const [isSeeking, setIsSeeking] = useState(false);
   const isSeekingRef = useRef(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isFastForwarding, setIsFastForwarding] = useState(false);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -170,23 +169,6 @@ export default function VideoPlayer({
     setShowControls((prev) => !prev);
   };
 
-  const handleLongPressIn = () => {
-    if (isPlaying) {
-      player.shouldCorrectPitch = true;
-      player.playbackRate = 1.5;
-      setShowControls(false);
-      setIsFastForwarding(true);
-    }
-  };
-
-  const handleLongPressOut = () => {
-    if (isFastForwarding) {
-      player.shouldCorrectPitch = true;
-      player.playbackRate = 1.0;
-      setIsFastForwarding(false);
-    }
-  };
-
   const togglePlayPause = () => {
     if (isPlaying) {
       player.pause();
@@ -256,20 +238,8 @@ export default function VideoPlayer({
         </View>
       )}
 
-      <TouchableWithoutFeedback
-        onPress={handleTap}
-        onLongPress={handleLongPressIn}
-        onPressOut={handleLongPressOut}
-        delayLongPress={300}
-      >
+      <TouchableWithoutFeedback onPress={handleTap}>
         <View style={styles.overlay}>
-          {isFastForwarding && (
-            <View style={styles.fastForwardIndicator}>
-              <Icon name="ChevronsRight" size={24} color="#fff" />
-              <Text style={styles.fastForwardText}>2x Speed</Text>
-            </View>
-          )}
-
           {showControls && (
             <View
               style={[
@@ -452,23 +422,6 @@ const styles = StyleSheet.create({
   skipText: {
     color: "#fff",
     fontSize: 10,
-    fontWeight: "700",
-  },
-  fastForwardIndicator: {
-    position: "absolute",
-    top: 40,
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 4,
-  },
-  fastForwardText: {
-    color: "#fff",
-    fontSize: 14,
     fontWeight: "700",
   },
   bottomBar: {
