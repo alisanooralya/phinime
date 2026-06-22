@@ -172,7 +172,8 @@ export default function VideoPlayer({
 
   const handleLongPressIn = () => {
     if (isPlaying) {
-      player.playbackRate = 2.0;
+      player.shouldCorrectPitch = true;
+      player.playbackRate = 1.5;
       setShowControls(false);
       setIsFastForwarding(true);
     }
@@ -180,6 +181,7 @@ export default function VideoPlayer({
 
   const handleLongPressOut = () => {
     if (isFastForwarding) {
+      player.shouldCorrectPitch = true;
       player.playbackRate = 1.0;
       setIsFastForwarding(false);
     }
