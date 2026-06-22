@@ -17,8 +17,8 @@ Notifications.setNotificationHandler({
 });
 
 if (Platform.OS === "android") {
-  Notifications.setNotificationChannelAsync("default", {
-    name: "Default",
+  Notifications.setNotificationChannelAsync("episode_alerts_v1", {
+    name: "Update Episode",
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#FF231F7C",
