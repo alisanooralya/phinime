@@ -173,14 +173,16 @@ export default function VideoPlayer({
   const handleLongPressIn = () => {
     if (isPlaying) {
       player.playbackRate = 2.0;
-      setIsFastForwarding(true);
       setShowControls(false);
+      setIsFastForwarding(true);
     }
   };
 
   const handleLongPressOut = () => {
-    player.playbackRate = 1.0;
-    setIsFastForwarding(false);
+    if (isFastForwarding) {
+      player.playbackRate = 1.0;
+      setIsFastForwarding(false);
+    }
   };
 
   const togglePlayPause = () => {
@@ -254,8 +256,9 @@ export default function VideoPlayer({
 
       <TouchableWithoutFeedback
         onPress={handleTap}
-        onPressIn={handleLongPressIn}
+        onLongPress={handleLongPressIn}
         onPressOut={handleLongPressOut}
+        delayLongPress={300}
       >
         <View style={styles.overlay}>
           {isFastForwarding && (
