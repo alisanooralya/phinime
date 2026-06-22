@@ -23,7 +23,13 @@
       "expo-font",
       "expo-image",
       "expo-screen-orientation",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FFFFFF"
+        }
+      ],
       "@react-native-google-signin/google-signin",
       [
         "expo-video",
@@ -45,9 +51,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#232323",
-          "image": "./assets/icon.png",
+          "image": "./assets/splash-icon.png",
           "dark": {
-            "image": "./assets/icon.png",
+            "image": "./assets/splash-icon.png",
             "backgroundColor": "#000000"
           },
           "imageWidth": 120
