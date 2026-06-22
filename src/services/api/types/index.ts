@@ -112,7 +112,7 @@ export interface AnimeDetailData {
   episode: string | null;
   studio: string | null;
   producer: string | null;
-  synopsis: string;
+  synopsis: [];
   gallery: unknown[];
   genres: SlugName[];
   directors: SlugName[];
