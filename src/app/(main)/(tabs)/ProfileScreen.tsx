@@ -171,7 +171,7 @@ export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
       showDialog({
         title: "Izin diperlukan",
         message: "Izinkan akses galeri untuk mengganti foto profil.",
-        confirmText: "Siap",
+        confirmText: "Oke",
         onConfirm: hideAlert,
       });
       return;
@@ -232,7 +232,6 @@ export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
         .getPublicUrl(path);
 
       const publicUrl = urlData.publicUrl;
-
       await supabase.auth.updateUser({
         data: {
           avatar_url: publicUrl,
@@ -251,26 +250,25 @@ export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
 
   const handleSignOut = useCallback(() => {
     confirm(
-      "Keluar",
+      "Sign Out",
       "Yakin ingin keluar?",
       async () => {
         await supabase.auth.signOut();
         router.replace("/(auth)/onboarding");
       },
-      { variant: "error", confirmText: "Keluar" },
+      { variant: "error", confirmText: "Sign Out" },
     );
   }, [router, confirm]);
 
   const handleDeleteAccount = useCallback(() => {
     confirm(
       "Hapus Akun",
-      "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Seluruh riwayat dan data Anda akan hilang selamanya.",
+      "Akun dan seluruh data Anda akan dihapus permanen. Apakah Anda yakin?",
       async () => {
         showDialog({
           variant: "error",
           title: "Hapus Akun Gagal",
-          message:
-            "Menghapus akun saat ini tidak dapat dilakukan dari aplikasi karena kebijakan keamanan. Silakan hubungi admin.",
+          message: ".",
           confirmText: "Tutup",
           onConfirm: hideAlert,
         });
@@ -342,19 +340,19 @@ export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
           <View style={styles.menuCard}>
             <MenuItem
               icon="Play"
-              label="Pemutaran"
+              label="Playback"
               onPress={() => router.push("/(main)/settings/playback")}
             />
             <View style={styles.menuDivider} />
             <MenuItem
               icon="Monitor"
-              label="Kualitas"
+              label="Quality"
               onPress={() => router.push("/(main)/settings/quality")}
             />
             <View style={styles.menuDivider} />
             <MenuItem
               icon="Bell"
-              label="Notifikasi"
+              label="Notification"
               onPress={() => router.push("/(main)/settings/notifications")}
             />
           </View>
