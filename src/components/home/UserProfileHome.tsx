@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 
 import Text from "../Text";
-import Button from "../Button";
 import ExpCard from "../ExpCard";
 import { AlertDialog } from "../Alert";
 
 import colors from "@/constants/colors";
-import { signOut } from "@/services/auth";
 import { supabase } from "@/lib/supabase";
 import { useAlertDialog } from "@/hooks/useAlert";
 
@@ -20,9 +18,8 @@ type UserData = {
 };
 
 export default function UserProfileHome() {
-  const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
-  const { state: alertState, confirm, hide: hideAlert } = useAlertDialog();
+  const { state: alertState, hide: hideAlert } = useAlertDialog();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -41,18 +38,6 @@ export default function UserProfileHome() {
     });
   }, []);
 
-  const handleSignOut = () => {
-    confirm(
-      "Sign Out",
-      "Yakin ingin keluar?",
-      async () => {
-        await signOut();
-        router.replace("/(auth)/onboarding");
-      },
-      { variant: "warning", confirmText: "Sign Out" },
-    );
-  };
-
   if (!user) return null;
 
   return (
@@ -69,13 +54,6 @@ export default function UserProfileHome() {
             <Text style={styles.email}>{user.email}</Text>
           </View>
         </View>
-
-        <Button
-          title="Sign Out"
-          text={styles.logoutText}
-          button={styles.logoutButton}
-          onPress={handleSignOut}
-        />
       </View>
 
       <ExpCard variant="compact" />
@@ -121,18 +99,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     marginTop: 2,
-  },
-  logoutButton: {
-    backgroundColor: "rgba(239,68,68,0.15)",
-    borderWidth: 0.8,
-    borderColor: "rgba(239,68,68,0.5)",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  logoutText: {
-    color: "#ef4444",
-    fontSize: 13,
-    fontWeight: "700",
   },
 });
