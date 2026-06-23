@@ -59,7 +59,7 @@ export default function PlaybackSettingScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
-        <BackButton title="Pemutaran" />
+        <BackButton title="Playback" />
       </View>
 
       <View style={styles.banner}>
@@ -68,8 +68,8 @@ export default function PlaybackSettingScreen() {
         </View>
         <Text style={styles.bannerTitle}>Pengaturan Playback</Text>
         <Text style={styles.bannerDesc}>
-          Sesuaikan cara video diputar di aplikasi ini. Pengaturan disimpan
-          secara lokal di perangkat kamu.
+          Tentukan bagaimana alur cerita berputar di aplikasi ini. Jejak
+          ingatanmu akan disimpan secara lokal di dalam perangkatmu.
         </Text>
       </View>
 
@@ -102,7 +102,7 @@ export default function PlaybackSettingScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>MODE MENGAPUNG</Text>
+        <Text style={styles.sectionTitle}>NODE MINI</Text>
         <View style={styles.card}>
           <SettingToggleRow
             icon="PictureInPicture"

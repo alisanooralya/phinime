@@ -1,9 +1,9 @@
+import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
+import * as Notifications from "expo-notifications";
 import { StyleSheet, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
-import { supabase } from "@/lib/supabase";
 
 import Icon from "@/components/Icon";
 import Text from "@/components/Text";
@@ -128,8 +128,8 @@ export default function NotificationSettingScreen() {
         </View>
         <Text style={styles.bannerTitle}>Pengaturan Notifikasi</Text>
         <Text style={styles.bannerDesc}>
-          Kelola bagaimana kamu menerima pemberitahuan dari Phinime tentang
-          anime favoritmu.
+          Selaraskan cara angin takdir menyampaikan bisikan dari phinime tentang
+          epos favoritmu.
         </Text>
       </View>
 
@@ -170,7 +170,7 @@ export default function NotificationSettingScreen() {
           <Icon name="Info" size={14} color={colors.textDark} />
           <Text style={styles.infoText}>
             Notifikasi dikirim dari server saat episode baru tersedia. Pastikan
-            izin notifikasi untuk aplikasi Phinime telah aktif di pengaturan
+            izin notifikasi untuk aplikasi phinime telah aktif di pengaturan
             sistem perangkat kamu.
           </Text>
         </View>

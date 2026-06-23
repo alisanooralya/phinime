@@ -84,8 +84,8 @@ export default function QualitySettingScreen() {
         </View>
         <Text style={styles.bannerTitle}>Pengaturan Kualitas</Text>
         <Text style={styles.bannerDesc}>
-          Tentukan kualitas video default saat menonton anime. Pengaturan ini
-          berlaku untuk semua episode secara otomatis.
+          Atur cara kisah menampakkan wujudnya. Pilihanmu akan otomatis menuntun
+          alur di setiap episode.
         </Text>
       </View>
 

@@ -343,9 +343,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FFFFFF",
     textAlign: "center",
+    marginBottom: 6,
   },
   dialogMessage: {
     fontSize: 14,
+    fontWeight: "600",
     color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 20,
