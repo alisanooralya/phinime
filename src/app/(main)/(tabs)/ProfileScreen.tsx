@@ -265,17 +265,22 @@ export default function ProfileScreen({ isActive }: { isActive?: boolean }) {
       "Hapus Akun",
       "Akun dan seluruh data Anda akan dihapus permanen. Apakah Anda yakin?",
       async () => {
-        showDialog({
-          variant: "error",
-          title: "Hapus Akun Gagal",
-          message: ".",
-          confirmText: "Tutup",
-          onConfirm: hideAlert,
-        });
+        const { data: authData } = await supabase.auth.getUser();
+        const uid = authData.user?.id;
+        if (!uid) return;
+
+        const { error } = await supabase.auth.api.deleteUser(uid);
+        if (error) {
+          console.error("[Profile] Gagal hapus akun:", error);
+          toastError("Gagal", "Tidak dapat menghapus akun. Coba lagi.");
+          return;
+        }
+
+        router.replace("/(auth)/onboarding");
       },
       { variant: "error", confirmText: "Hapus Permanen" },
     );
-  }, [confirm, showDialog, hideAlert]);
+  }, [confirm, toastError, router]);
 
   if (loading) {
     return (
